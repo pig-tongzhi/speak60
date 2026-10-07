@@ -707,6 +707,13 @@
     transition: background 0.18s, color 0.18s;
   }
   .pick-item:first-child { border-top: 0; }
+  /* 「全部」行：与下面的分类列表有明确分隔 */
+  .pick-item.is-all { border-bottom: 1px solid var(--line-2); }
+  .pick-item.is-all .pick-name { font-weight: 600; }
+  #pickList .pick-item:first-child { border-top: 0; }
+  /* 全部模式下分类项不做高亮，但仍可点击（点一下即切到自定义范围） */
+  #pickList .pick-item:not(.is-on) .pick-box { border-color: var(--line-2); }
+  #pickList .pick-item:not(.is-on) .pick-num { color: var(--text-4); }
   .pick-item:hover { background: var(--hover-bg); }
   .pick-item .pick-icon {
     display: grid;
@@ -1231,6 +1238,8 @@
     book: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.2A1.7 1.7 0 0 1 5.7 3.5H11a1 1 0 0 1 1 1v15a1 1 0 0 0-1-1H5.7A1.7 1.7 0 0 1 4 16.8V5.2Z"/><path d="M20 5.2a1.7 1.7 0 0 0-1.7-1.7H13a1 1 0 0 0-1 1v15a1 1 0 0 1 1-1h5.3A1.7 1.7 0 0 0 20 16.8V5.2Z"/></svg>',
     mind: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20.4a4 4 0 0 0 4-4v-.5a3.2 3.2 0 0 0 1.6-2.8c0-1-.5-2-1.2-2.6V8.6A4.6 4.6 0 0 0 7.8 8.5v1.9A3.3 3.3 0 0 0 6.4 13c0 1.2.6 2.2 1.6 2.8v.6a4 4 0 0 0 4 4Z"/><path d="M12 20.4v-9"/></svg>',
     scale: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v16"/><path d="M6 20h12"/><path d="M4 9h16"/><path d="M4 9l-2 5h4L4 9Z"/><path d="M20 9l-2 5h4l-2-5Z"/></svg>',
+    layers: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5 3.5 8l8.5 4.5L20.5 8 12 3.5Z"/><path d="M3.5 12.5 12 17l8.5-4.5"/><path d="M3.5 16.5 12 21l8.5-4.5"/></svg>',
+    check: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7"/></svg>',
     globe: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17"/><path d="M12 3.5c2.4 2.3 3.6 5.2 3.6 8.5S14.4 18.2 12 20.5c-2.4-2.3-3.6-5.2-3.6-8.5S9.6 5.8 12 3.5Z"/></svg>',
     moon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14.2A8.2 8.2 0 0 1 9.8 4a8.2 8.2 0 1 0 10.2 10.2Z"/></svg>',
     sun: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2.6v2.2M12 19.2v2.2M4.2 4.2l1.6 1.6M18.2 18.2l1.6 1.6M2.6 12h2.2M19.2 12h2.2M4.2 19.8l1.6-1.6M18.2 5.8l1.6-1.6"/></svg>'
@@ -1274,26 +1283,30 @@
     {
       id: "daily", label: "日常杂谈", icon: I.spark,
       topics: [
-        "通勤路上", "群聊", "自动纠错", "门铃",
-        "副驾驶", "旧手机", "外卖迟到", "Wi-Fi 密码",
-        "排队", "快递柜", "丢伞", "闹钟",
-        "买菜", "理发", "洗衣服", "搬东西",
-        "菜市场砍价", "电梯里的沉默", "第一次做饭", "被叫错名字",
-        "空调温度之争", "邻居的声音", "取快递时遇到熟人", "地铁让座",
-        "剩菜", "超市自助结账", "行李箱轮子", "手机电量 1%",
-        "共享单车", "小区门禁", "洗好的碗放哪", "室友的冰箱",
-        "凌晨三点的便利店", "剪头发时说话", "旅行装箱", "重复的梦",
-        "天气预报不准", "打折陷阱", "停车场找车位", "备忘录里最久的一条",
-        "取快递", "旧照片", "群聊里的链接", "外卖好评返现",
-        "牙膏快挤完了", "换季感冒", "地铁上的广播", "手机壳",
-        "买菜送葱", "充电线", "被推销", "理发排队叫号",
-        "洗衣机结束的提示音", "共享充电宝", "早起第一件事", "杯子里的水垢",
-        "雨天没带伞", "袜子的配对", "电脑风扇声", "罐头盖子",
-        "遥控器的电池", "小区快递代收点", "外卖备注", "打车拼车",
-        "朋友迟到", "被拉进新群", "手机相册的第一张", "空调外机的水滴声",
-        "晾衣服的天气", "自我介绍", "相亲饭局", "健身房的第一天",
-        "凌晨的饿", "陌生的口音", "便利店关东煮", "微信未读 99+",
-        "旧日记", "自行车掉链子", "打印店", "深夜的出租车"
+        "通勤时间算不算自己的时间", "为什么手机越智能人越健忘", "自动纠错正在悄悄改变语言",
+        "群里没人回消息时发生了什么", "排队的公平感是怎么来的", "电梯里为什么必须沉默",
+        "被叫错名字的一瞬间", "空调温度之争背后是权力还是体感", "邻居的声音：城市里的隐私边界",
+        "地铁让座是谁的义务", "剩菜是节俭还是风险", "自助结账把人变成了收银员",
+        "行李箱的轮子改变了旅行什么", "共享单车解决的与制造的问题", "门禁与方便之间的取舍",
+        "室友的冰箱：共用空间的默认规则", "剪头发时为什么不得不说话", "旅行装箱暴露的决策方式",
+        "重复的梦在重复什么", "天气预报为什么经常不准", "打折与优惠券在利用什么心理",
+        "为什么停车场永远找不到车位", "洗碗这件事为什么总起争执", "外卖评价体系的可信度",
+        "牙膏从中间挤还是从尾部挤", "换季感冒：体质还是概率", "被推销时应该说真话吗",
+        "共享充电宝的成本到底谁在付", "早起后的第一个决定", "雨天没带伞是运气还是判断失误",
+        "袜子的配对与秩序的执念", "罐头盖的设计为什么几十年不变", "外卖备注：陌生人之间的临时信任",
+        "打车拼车把成本转移给了谁", "朋友迟到该不该计较", "被拉进新群的社交压力",
+        "晾衣服这件小事里的城市规划", "自我介绍里有多少是表演", "相亲饭局：把关系变成筛选",
+        "凌晨三点的饿：身体还是情绪", "口音是标签还是身份", "便利店的位置为什么总在拐角",
+        "旧日记里的自己还算不算自己", "自行车掉链子：维护的成本被谁忽略", "打印店的消失说明了什么",
+        "深夜出租车上的一段对话", "菜市场砍价与固定价格的分界", "第一份工作教会了什么",
+        "朋友圈为什么越来越安静", "纸质书为什么还没有死", "购物车里的东西为什么最后没买",
+        "邻居装修：权利与忍受的边界", "电梯广告为什么越来越吵", "为什么楼下的店总是开不久",
+        "快递柜取消送货上门值不值", "钥匙与指纹锁：信任的技术替代", "超市动线是怎么设计你的",
+        "为什么打折越狠越不想买", "等红灯时的九十秒", "办公室的空调与工位政治",
+        "微信表情包在替代什么语言", "给父母买智能手机这件事", "为什么我们记不住刚看过的号码",
+        "景区门票定价的逻辑", "为什么旧照片比新照片更耐看", "商场一层的化妆品柜台为什么都长一样",
+        "充电五分钟这件事成了卖点", "被算法推荐的一生", "为什么我们总觉得别人在注意自己",
+        "跳过的广告和记住的广告", "搬家时扔掉的东西说明了什么"
       ]
     },
     {
@@ -1308,7 +1321,7 @@
         "复利的反面：复亏", "机会成本", "比较优势", "激励不相容",
         "逆向选择", "道德风险", "公地悲剧", "搭便车",
         "外部性", "信息不对称", "谈判中的 BATNA", "沉没成本的日常形态",
-        "确认偏误", "可得性启发", "代表性启发", "锚定效应",
+        "决策中的确认偏误", "可得性启发", "代表性启发", "锚定效应",
         "框架效应", "损失厌恶", "禀赋效应", "心理账户",
         "双曲贴现", "承诺一致性", "社会认同", "权威偏误",
         "稀缺心态", "邓宁-克鲁格效应"
@@ -1377,7 +1390,7 @@
     {
       id: "money", label: "理财与投资", icon: I.coin,
       topics: [
-        "应急金", "复利的数学本质", "生活方式膨胀", "沉没成本",
+        "应急金", "复利的时间成本", "生活方式膨胀", "沉没成本",
         "机会成本与选择", "净资产", "现金流", "高息负债",
         "风险承受度", "分散配置", "定投", "仓位管理",
         "安全边际与安全垫", "能力圈与投资边界", "周期", "现金是氧气",
@@ -1468,13 +1481,13 @@
       topics: [
         "苏格拉底", "柏拉图", "亚里士多德", "斯多葛", "伊壁鸠鲁", "奥勒留",
         "笛卡尔", "休谟", "康德", "黑格尔", "尼采", "叔本华",
-        "克尔凯郭尔", "维特根斯坦", "罗素", "萨特", "波伏娃", "加缪",
+        "克尔凯郭尔", "维特根斯坦", "罗素", "萨特", "波伏娃", "加缪与西西弗斯",
         "福柯", "哈贝马斯", "罗尔斯", "诺齐克", "桑德尔", "查尔斯·泰勒",
         "王阳明", "朱熹", "孔子", "老子", "庄子", "墨子",
         "知行合一", "格物致知", "无为而治", "中庸", "名实之辨", "白马非马",
         "电车难题", "无知之幕", "功利主义", "义务论", "德性伦理", "道德运气",
         "自由意志", "决定论", "相容论", "人格同一性", "他心问题", "缸中之脑",
-        "忒修斯之船", "罗素悖论", "说谎者悖论", "无限倒退", "奥卡姆剃刀",
+        "忒修斯之船", "罗素悖论", "说谎者悖论", "无限倒退", "奥卡姆剃刀与简单性",
         "实然与应然", "自然主义谬误", "语言的边界", "私人语言", "意义与指称",
         "何为正义", "平等的两种含义", "自由与干预", "权利与善", "动物的道德地位",
         "什么是好的人生", "死亡的意义", "幸福是感受还是评价", "痛苦有没有价值", "无聊的价值"
@@ -1674,14 +1687,32 @@
     return NICHES.filter(function (n) { return state.enabled.indexOf(n.id) >= 0; });
   }
 
-  // 抽题池：所有已开启分类的题目合并。
-  // 之所以不「先随机选分类再随机选题」，是因为各分类题量不等，
-  // 那样小分类会被过度放大。合并后每题等概率，更公平。
+  // 抽题池：合并后每题等概率。
+  // 之所以不「先随机选分类再随机选题」，是因为各分类题量不等（47~86），
+  // 那样小分类会被过度放大。
+  // scope=all 时用全部分类；scope=custom 时只用勾选的分类。
+  function scopeNiches() {
+    if (state.scope === "all") return NICHES.slice();
+    var on = enabledNiches();
+    return on.length ? on : NICHES.slice();
+  }
+
+  // 去重兜底：万一以后两个分类出现同名题目，也不会在同一轮里被抽到两次
+  var _poolCache = null;
+  var _poolKey = "";
   function activePool() {
+    var list = scopeNiches();
+    var key = state.mode + "|" + state.scope + "|" + list.map(function (n) { return n.id; }).join(",");
+    if (_poolCache && _poolKey === key) return _poolCache;
+    var seen = {};
     var pool = [];
-    enabledNiches().forEach(function (n) {
-      pool = pool.concat(n.topics);
+    list.forEach(function (n) {
+      n.topics.forEach(function (t) {
+        if (!seen[t]) { seen[t] = 1; pool.push(t); }
+      });
     });
+    _poolCache = pool;
+    _poolKey = key;
     return pool;
   }
 
@@ -1697,12 +1728,21 @@
   }
 
   function toggleNiche(id) {
-    var at = state.enabled.indexOf(id);
-    if (at >= 0) {
-      if (state.enabled.length === 1) return false;   // 最后一个不给关
-      state.enabled.splice(at, 1);
+    // 从「全部」切到自定义时，勾选集合先清空：
+    // 此时 enabled 里装着全部分类，如果直接 toggle，点「文学」会变成「取消文学、
+    // 保留其余 11 类」，与「我要练文学」的意图正好相反。
+    if (state.scope === "all") {
+      state.enabled = [id];
+      state.scope = "custom";
+      save("scope", state.scope);
     } else {
-      state.enabled.push(id);
+      var at = state.enabled.indexOf(id);
+      if (at >= 0) {
+        if (state.enabled.length === 1) return false;   // 最后一个不给关
+        state.enabled.splice(at, 1);
+      } else {
+        state.enabled.push(id);
+      }
     }
     // 顺序对齐 NICHES，菜单与列表才稳定
     state.enabled = ALL_NICHE_IDS.filter(function (x) {
@@ -1722,10 +1762,26 @@
     return true;
   }
 
+  // 一键全选 = 回到「所有分类混合」
   function toggleAllNiches(on) {
     state.enabled = on ? ALL_NICHE_IDS.slice() : [state.niche];
     if (state.enabled.indexOf(state.niche) < 0) state.enabled = [NICHES[0].id];
     state.niche = state.enabled.indexOf(state.niche) >= 0 ? state.niche : state.enabled[0];
+    state.scope = on ? "all" : "custom";
+    save("scope", state.scope);
+    saveNiches();
+    if (state.mode !== "deep-research") {
+      lastIndex = 0;
+      setTopic(pick(activePool()));
+    }
+    renderAll();
+    updateNicheMenu();
+  }
+
+  function setScopeAll() {
+    state.scope = "all";
+    state.enabled = ALL_NICHE_IDS.slice();
+    save("scope", "all");
     saveNiches();
     if (state.mode !== "deep-research") {
       lastIndex = 0;
@@ -1745,6 +1801,8 @@
   var state = {
     mode: load("mode", "off-the-cuff"),
     niche: load("niche", NICHES[0].id),
+    // scope: "all" = 所有分类混合抽题（默认）；"custom" = 只在勾选的分类里抽
+    scope: load("scope", "all") === "custom" ? "custom" : "all",
     enabled: loadNiches(),
     theme: document.documentElement.dataset.theme === "light" ? "light" : "dark",
     palette: load("palette", DEFAULT_PALETTE),
@@ -1833,11 +1891,24 @@
   function renderNiche() {
     var n = activeNiche();
     var on = enabledNiches();
-    el.nicheEmoji.innerHTML = n.icon || I.spark;
-    el.nicheLabel.textContent = n.label;
+    var scope = scopeNiches();
     var count = state.mode === "deep-research" ? RESEARCH.topics.length : activePool().length;
-    // 分类数写进数字里，避免中间那个「·」分隔符换行时错位
-    el.nicheCount.textContent = (state.mode === "deep-research" ? "" : on.length + " 类 · ") + count + " 题";
+    if (state.mode === "deep-research") {
+      el.nicheEmoji.innerHTML = n.icon || I.spark;
+      el.nicheLabel.textContent = n.label;
+      el.nicheCount.textContent = count + " 题";
+    } else if (state.scope === "all") {
+      // 默认：所有分类混合
+      el.nicheEmoji.innerHTML = I.layers;
+      el.nicheLabel.textContent = "全部";
+      el.nicheCount.textContent = NICHES.length + " 类 · " + count + " 题";
+    } else {
+      if (state.enabled.indexOf(state.niche) < 0) state.niche = state.enabled[0];
+      n = nicheById(state.niche);
+      el.nicheEmoji.innerHTML = n.icon || I.spark;
+      el.nicheLabel.textContent = on.length > 1 ? n.label + " 等 " + on.length + " 类" : n.label;
+      el.nicheCount.textContent = count + " 题";
+    }
     el.niche.hidden = state.mode === "deep-research";
     el.nicheTrigger.disabled = isBusy();
   }
@@ -1879,8 +1950,7 @@
 
   function buildMenu() {
     el.nicheMenu.innerHTML = "";
-    var list = enabledNiches();
-    if (!list.length) list = NICHES.slice();
+    var list = scopeNiches();
     list.forEach(function (n) {
       var row = document.createElement("div");
       row.className = "niche-option" + (n.id === state.niche ? " is-active" : "");
@@ -1917,6 +1987,14 @@
   function chooseNiche(id) {
     state.niche = id;
     save("niche", id);
+    // 从下拉里选一个分类 = 只看这一类，否则在「全部」范围下选了也不生效，
+    // 用户会以为没反应
+    if (state.mode !== "deep-research") {
+      state.scope = "custom";
+      state.enabled = [id];
+      save("scope", state.scope);
+      saveNiches();
+    }
     closeMenu(true);
     lastIndex = 0;
     setTopic(pick(activeTopics()));
@@ -2394,10 +2472,18 @@
 
         '<div class="field">' +
           '<div class="field-head">' +
-            '<span class="field-label" id="pickLabel">题目分类</span>' +
-            '<button type="button" class="link-btn" id="pickAll">全选 / 全不选</button>' +
+            '<span class="field-label" id="pickLabel">抽题范围</span>' +
           "</div>" +
-          '<div class="pick-list" id="pickList" role="group" aria-labelledby="pickLabel"></div>' +
+          '<div class="pick-list" role="group" aria-labelledby="pickLabel">' +
+            '<button type="button" class="pick-item is-all" id="pickAllScope"' +
+              ' role="radio" aria-checked="' + (state.scope === "all" ? "true" : "false") + '">' +
+              '<span class="pick-box" aria-hidden="true"></span>' +
+              '<span class="pick-icon" aria-hidden="true">' + I.layers + "</span>" +
+              '<span class="pick-name">全部（混合抽题）</span>' +
+              '<span class="pick-num" id="allScopeNum"></span>' +
+            "</button>" +
+            '<div id="pickList"></div>' +
+          "</div>" +
           '<p class="field-hint" id="pickHint"></p>' +
         "</div>" +
 
@@ -2429,8 +2515,18 @@
     function renderPick() {
       var on = enabledNiches();
       var lastOne = state.enabled.length === 1;
+      var isAll = state.scope === "all";
+
+      // 「全部」行：用 NICHES 的总题量（不是 activePool，避免和 scope 循环依赖）
+      var allRow = wrap.querySelector("#pickAllScope");
+      var allCount = NICHES.reduce(function (a, n) { return a + n.topics.length; }, 0);
+      allRow.classList.toggle("is-on", isAll);
+      allRow.setAttribute("aria-checked", isAll ? "true" : "false");
+      wrap.querySelector("#allScopeNum").textContent = NICHES.length + " 类 · " + allCount + " 题";
+
       pickList.innerHTML = NICHES.map(function (n) {
-        var active = state.enabled.indexOf(n.id) >= 0;
+        // 全部模式下不高亮任何单项：此时勾选状态不代表实际范围
+        var active = !isAll && state.enabled.indexOf(n.id) >= 0;
         // 只剩一个开启时，把它自己禁掉，给出明确反馈而不是静默无反应
         var locked = active && lastOne;
         return '<button type="button" class="pick-item' + (active ? " is-on" : "") + '"' +
@@ -2448,14 +2544,18 @@
       var total = activePool().length;
       var newsNote = "";
       if (NEWS) {
-        newsNote = "「时事」为 " + NEWS.generatedAt + " 抓取，共 " + NEWS.topics.length +
-          " 条" + (NEWS.sources.length ? "（" + NEWS.sources.join("、") + "）" : "") +
-          "，已过时可执行 node tools/gen-news.mjs 重新生成。";
+        newsNote = "时事更新于 " + NEWS.generatedAt + "，过期可跑 tools/gen-news.mjs。";
       }
-      pickHint.textContent = (lastOne
-        ? "已开启 " + on[0].label + "，共 " + total + " 题。至少保留一个分类，想换就开别的再关这个。"
-        : "已开启 " + on.length + " / " + NICHES.length + " 个分类，共 " + total +
-          " 题会被抽到。抽题在这个合集里等概率选取。") + (newsNote ? " " + newsNote : "");
+      // 题量已经在大字上显示了，提示里不重复，只讲「当前范围是什么」
+      var head;
+      if (isAll) {
+        head = "默认全部分类混合抽题，每题等概率。想只练某几块，点下面的分类。";
+      } else if (lastOne) {
+        head = "只在「" + on[0].label + "」里抽。至少保留一个分类，想换就开别的再关这个。";
+      } else {
+        head = "只在勾选的 " + on.length + " 个分类里抽，每题等概率。";
+      }
+      pickHint.textContent = head + (newsNote ? " " + newsNote : "");
 
       padForFooter();
 
@@ -2488,9 +2588,8 @@
       } catch (e) {}
     }
 
-    wrap.querySelector("#pickAll").addEventListener("click", function () {
-      var allOn = state.enabled.length === NICHES.length;
-      toggleAllNiches(!allOn);
+    wrap.querySelector("#pickAllScope").addEventListener("click", function () {
+      setScopeAll();
       renderPick();
     });
 

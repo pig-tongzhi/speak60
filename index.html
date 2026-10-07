@@ -391,6 +391,14 @@
     border-color: var(--c-edge);
   }
   .niche-option .niche-count { margin-left: auto; }
+  /* 菜单顶部「全部」行：与下面分类列表分隔开 */
+  .niche-option.is-all-option {
+    border-bottom: 1px solid var(--line-2);
+    border-radius: var(--r-sm) var(--r-sm) 0 0;
+    margin-bottom: 4px;
+    color: var(--text-2);
+  }
+  .niche-option.is-all-option .niche-label { font-weight: 600; }
   .niche-option.is-active .niche-count { color: var(--c); opacity: 0.75; }
 
   /* ---------- 抽题展示区 ---------- */
@@ -1954,20 +1962,43 @@
 
   function buildMenu() {
     el.nicheMenu.innerHTML = "";
-    var list = scopeNiches();
-    list.forEach(function (n) {
+    var isAll = state.scope === "all";
+
+    // 顶部固定一行「全部（混合抽题）」：否则选了具体分类后，
+    // 菜单里只剩那一项，用户没有路径切回全部（也没法换别的分类）
+    var allRow = document.createElement("div");
+    allRow.className = "niche-option is-all-option" + (isAll ? " is-active" : "");
+    allRow.setAttribute("role", "option");
+    allRow.setAttribute("aria-selected", isAll ? "true" : "false");
+    allRow.tabIndex = -1;
+    allRow.dataset.id = "__all__";
+    var allCount = NICHES.reduce(function (a, n) { return a + n.topics.length; }, 0);
+    allRow.innerHTML = '<span class="niche-emoji" aria-hidden="true">' + I.layers +
+      '</span><span class="niche-label">全部（混合抽题）</span>' +
+      '<span class="niche-count">' + NICHES.length + " 类 · " + allCount + "</span>";
+    allRow.addEventListener("click", function () { selectAllFromMenu(); });
+    el.nicheMenu.appendChild(allRow);
+
+    // 其余分类始终全部列出（不再只列当前范围的），点任意一个即切到「只看它」
+    NICHES.forEach(function (n) {
       var row = document.createElement("div");
-      row.className = "niche-option" + (n.id === state.niche ? " is-active" : "");
+      var on = !isAll && state.enabled.indexOf(n.id) >= 0;
+      row.className = "niche-option" + (on ? " is-active" : "");
       row.setAttribute("role", "option");
-      row.setAttribute("aria-selected", n.id === state.niche ? "true" : "false");
+      row.setAttribute("aria-selected", on ? "true" : "false");
       row.tabIndex = -1;
       row.dataset.id = n.id;
       row.innerHTML = '<span class="niche-emoji" aria-hidden="true">' + (n.icon || I.spark) +
-        "</span><span>" + n.label +
+        '</span><span class="niche-label">' + n.label +
         '</span><span class="niche-count">' + n.topics.length + "</span>";
       row.addEventListener("click", function () { chooseNiche(n.id); });
       el.nicheMenu.appendChild(row);
     });
+  }
+
+  function selectAllFromMenu() {
+    setScopeAll();
+    closeMenu(true);
   }
 
   function openMenu() {
@@ -2023,7 +2054,9 @@
     else if (e.key === "End") { e.preventDefault(); rows[rows.length - 1].focus(); }
     else if (e.key === "Enter" || e.key === " ") {
       e.preventDefault();
-      if (rows[at]) chooseNiche(rows[at].dataset.id);
+      if (!rows[at]) return;
+      if (rows[at].dataset.id === "__all__") selectAllFromMenu();
+      else chooseNiche(rows[at].dataset.id);
     } else if (e.key === "Escape") { e.preventDefault(); closeMenu(true); }
     else if (e.key === "Tab") { closeMenu(false); }
   });

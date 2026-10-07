@@ -1155,6 +1155,9 @@
   </main>
 </div>
 
+<!-- 时事题库：由 tools/gen-news.mjs 生成，可随时重新生成。
+     没有这个文件时下面这行只是 404，应用会自动隐藏「时事」分类。 -->
+<script src="news-data.js"></script>
 <script>
 (function () {
   "use strict";
@@ -1225,6 +1228,10 @@
     wrench: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15.2 4.4a4.6 4.6 0 0 1 5.9 6.2l-3-3-2.5 2.5 3 3a4.6 4.6 0 0 1-6.2-5.9l-6 6a2.1 2.1 0 1 0 3 3l6-6"/></svg>',
     heart: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20s-7-4.3-7-9.3A3.9 3.9 0 0 1 12 8.4a3.9 3.9 0 0 1 7 2.3c0 5-7 9.3-7 9.3Z"/></svg>',
     search: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="6.2"/><path d="M15.6 15.6L20.5 20.5"/></svg>',
+    book: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.2A1.7 1.7 0 0 1 5.7 3.5H11a1 1 0 0 1 1 1v15a1 1 0 0 0-1-1H5.7A1.7 1.7 0 0 1 4 16.8V5.2Z"/><path d="M20 5.2a1.7 1.7 0 0 0-1.7-1.7H13a1 1 0 0 0-1 1v15a1 1 0 0 1 1-1h5.3A1.7 1.7 0 0 0 20 16.8V5.2Z"/></svg>',
+    mind: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20.4a4 4 0 0 0 4-4v-.5a3.2 3.2 0 0 0 1.6-2.8c0-1-.5-2-1.2-2.6V8.6A4.6 4.6 0 0 0 7.8 8.5v1.9A3.3 3.3 0 0 0 6.4 13c0 1.2.6 2.2 1.6 2.8v.6a4 4 0 0 0 4 4Z"/><path d="M12 20.4v-9"/></svg>',
+    scale: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v16"/><path d="M6 20h12"/><path d="M4 9h16"/><path d="M4 9l-2 5h4L4 9Z"/><path d="M20 9l-2 5h4l-2-5Z"/></svg>',
+    globe: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17"/><path d="M12 3.5c2.4 2.3 3.6 5.2 3.6 8.5S14.4 18.2 12 20.5c-2.4-2.3-3.6-5.2-3.6-8.5S9.6 5.8 12 3.5Z"/></svg>',
     moon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14.2A8.2 8.2 0 0 1 9.8 4a8.2 8.2 0 1 0 10.2 10.2Z"/></svg>',
     sun: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2.6v2.2M12 19.2v2.2M4.2 4.2l1.6 1.6M18.2 18.2l1.6 1.6M2.6 12h2.2M19.2 12h2.2M4.2 19.8l1.6-1.6M18.2 5.8l1.6-1.6"/></svg>'
   };
@@ -1323,7 +1330,13 @@
         "AI 生成内容的标注", "知识截止", "多轮对话的状态管理", "意图识别",
         "槽位填充", "函数调用的可靠性", "沙箱执行", "成本与效果的权衡",
         "AI 招聘筛选的偏见", "AI 与教育", "为什么 AI 会自信地说错", "prompt 注入",
-        "越狱攻击", "内容审核", "AI 角色的边界", "自动化决策的责任"
+        "越狱攻击", "内容审核", "AI 角色的边界", "自动化决策的责任",
+        "大模型的规模定律", "思维链", "少样本学习", "零样本与一样本", "温度与采样",
+        "幻觉的成因与缓解", "检索与生成的边界", "工具使用中的错误恢复", "上下文压缩", "长期记忆的存储",
+        "Agent 的规划能力", "任务分解", "自我反思循环", "多智能体协作的收益与代价", "人机接口",
+        "语音合成的自然度", "视频生成的现状", "模型的可解释性", "红队测试", "对抗样本",
+        "数据标注的质量", "版权与训练数据", "开源与闭源的路线", "推理与训练的成本结构", "边缘端推理",
+        "模型评估的陷阱", "基准测试的过拟合", "AI 生成代码的维护成本", "自然语言编程的边界", "什么岗位最先被影响"
       ]
     },
     {
@@ -1417,8 +1430,77 @@
         "肌少症", "平衡能力", "心肺功能", "柔韧性",
         "生活习惯的复利"
       ]
+    },
+    {
+      id: "literature", label: "文学", icon: I.book,
+      topics: [
+        "鲁迅", "张爱玲", "汪曾祺", "沈从文", "老舍", "钱钟书", "王小波", "余华",
+        "莫言", "白先勇", "三毛", "木心", "北岛", "顾城", "海子", "杜甫",
+        "李白", "苏轼", "曹雪芹", "蒲松龄", "卡夫卡", "加缪", "马尔克斯", "博尔赫斯",
+        "卡尔维诺", "海明威", "菲茨杰拉德", "伍尔夫", "奥威尔", "陀思妥耶夫斯基", "托尔斯泰", "契诃夫",
+        "普鲁斯特", "乔伊斯", "纳博科夫", "石黑一雄", "门罗", "奈保尔", "村上春树",
+        "三岛由纪夫", "川端康成", "泰戈尔", "里尔克", "艾略特", "叶芝", "辛波斯卡", "米沃什",
+        "一句记得住的开头", "最喜欢的一段描写", "读不下去的名著", "重读发现的新东西", "被改编毁掉的小说",
+        "诗与散文的区别", "小说的第一人称", "为什么要有留白", "翻译腔的得失", "虚构的意义",
+        "荒诞与反抗", "孤独作为一种母题", "时间的写法", "细节如何塑造人物", "结尾为什么难写",
+        "被过誉的作家", "通俗文学的尊严", "童年读的第一本书", "旧书店", "纸质书还会不会消失"
+      ]
+    },
+    {
+      id: "psychology", label: "心理学", icon: I.mind,
+      topics: [
+        "认知失调", "沉没成本的心理机制", "拖延的心理学", "习得性无助", "内在动机与外在奖励",
+        "心流", "自我决定论", "成长型思维", "固定型思维", "刻板印象威胁",
+        "皮格马利翁效应", "旁观者效应", "从众", "服从权威", "斯坦福监狱实验的争议",
+        "巴纳姆效应", "达克效应", "基本归因错误", "自利偏差", "确认偏误",
+        "记忆的重构性", "闪光灯记忆", "目击者证词的可靠性", "虚假记忆", "遗忘曲线",
+        "间隔重复", "睡眠与记忆巩固", "情绪记忆", "创伤后成长", "创伤后应激",
+        "依恋类型", "安全基地", "焦虑型与回避型", "亲密关系的修复尝试", "关系里的权力",
+        "内耗", "反刍思维", "情绪调节策略", "接纳与承诺", "认知重评",
+        "正念的科学边界", "安慰剂效应", "身心连接", "压力与免疫", "慢性压力的代价",
+        "孤独感的健康影响", "社交支持的作用", "感恩练习", "自我关怀", "自尊与自恋的区别",
+        "边界感", "讨好型人格", "回避冲突", "情绪勒索", "亲密与独立的平衡",
+        "孩子为什么不听话", "惩罚的副作用", "正强化的用法", "延迟满足的再审视", "棉花糖实验的复现"
+      ]
+    },
+    {
+      id: "philosophy", label: "哲学与思辨", icon: I.scale,
+      topics: [
+        "苏格拉底", "柏拉图", "亚里士多德", "斯多葛", "伊壁鸠鲁", "奥勒留",
+        "笛卡尔", "休谟", "康德", "黑格尔", "尼采", "叔本华",
+        "克尔凯郭尔", "维特根斯坦", "罗素", "萨特", "波伏娃", "加缪",
+        "福柯", "哈贝马斯", "罗尔斯", "诺齐克", "桑德尔", "查尔斯·泰勒",
+        "王阳明", "朱熹", "孔子", "老子", "庄子", "墨子",
+        "知行合一", "格物致知", "无为而治", "中庸", "名实之辨", "白马非马",
+        "电车难题", "无知之幕", "功利主义", "义务论", "德性伦理", "道德运气",
+        "自由意志", "决定论", "相容论", "人格同一性", "他心问题", "缸中之脑",
+        "忒修斯之船", "罗素悖论", "说谎者悖论", "无限倒退", "奥卡姆剃刀",
+        "实然与应然", "自然主义谬误", "语言的边界", "私人语言", "意义与指称",
+        "何为正义", "平等的两种含义", "自由与干预", "权利与善", "动物的道德地位",
+        "什么是好的人生", "死亡的意义", "幸福是感受还是评价", "痛苦有没有价值", "无聊的价值"
+      ]
     }
   ];
+
+  /* ---------- 「时事」分类：来自 news-data.js，抓到才有 ---------- */
+  var NEWS = (function () {
+    var d = window.SPEAK60_NEWS;
+    if (!d || !d.topics || !d.topics.length) return null;
+    return {
+      generatedAt: d.generatedAt || "",
+      sources: (d.sources || []).map(function (x) { return x.name; }),
+      topics: d.topics.slice()
+    };
+  })();
+
+  if (NEWS) {
+    NICHES.push({
+      id: "current-affairs",
+      label: "时事",
+      icon: I.globe,
+      topics: NEWS.topics
+    });
+  }
 
   var MODES = [
     { id: "off-the-cuff", label: "临场直接讲", icon: I.bulb,
@@ -2364,10 +2446,16 @@
       }).join("");
 
       var total = activePool().length;
-      pickHint.textContent = lastOne
+      var newsNote = "";
+      if (NEWS) {
+        newsNote = "「时事」为 " + NEWS.generatedAt + " 抓取，共 " + NEWS.topics.length +
+          " 条" + (NEWS.sources.length ? "（" + NEWS.sources.join("、") + "）" : "") +
+          "，已过时可执行 node tools/gen-news.mjs 重新生成。";
+      }
+      pickHint.textContent = (lastOne
         ? "已开启 " + on[0].label + "，共 " + total + " 题。至少保留一个分类，想换就开别的再关这个。"
         : "已开启 " + on.length + " / " + NICHES.length + " 个分类，共 " + total +
-          " 题会被抽到。抽题在这个合集里等概率选取。";
+          " 题会被抽到。抽题在这个合集里等概率选取。") + (newsNote ? " " + newsNote : "");
 
       padForFooter();
 

@@ -1,0 +1,2155 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<meta name="theme-color" content="#0a0d0c" />
+<link rel="icon" id="favicon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23101412'/%3E%3Ccircle cx='16' cy='16' r='9' fill='none' stroke='%233d4442' stroke-width='3'/%3E%3Cpath d='M16 7a9 9 0 0 1 9 9' fill='none' stroke='%234aa8ff' stroke-width='3' stroke-linecap='round'/%3E%3Cpath d='M16 16l3.6-3.6' stroke='%23f2f6f4' stroke-width='2.6' stroke-linecap='round'/%3E%3C/svg%3E" />
+<script>
+  // 尽早落主题，避免浅色用户先看到一帧深色闪屏
+  (function () {
+    var t = null;
+    try { t = localStorage.getItem("speak60:theme"); } catch (e) {}
+    if (t !== "light" && t !== "dark") {
+      t = (window.matchMedia && window.matchMedia("(prefers-color-scheme: light)").matches)
+        ? "light" : "dark";
+    }
+    document.documentElement.dataset.theme = t;
+  })();
+</script>
+<title>即兴一分钟 — 演讲练习</title>
+<style>
+  /* ============================================================
+     配色令牌：5 套强调色 × 深浅两种底色
+     深色下用亮一点的颜色；浅色下必须换成更深的同色系，
+     否则亮色压在白底上会发飘、按钮上的字也读不清。
+     每个 --c-on（按钮上的字色）都按 WCAG AA（≥4.5）算过。
+     ============================================================ */
+  [data-palette="amber"] {
+    --c: #e0a028; --c-bright: #f5c563; --c-deep: #a86e10;
+    --c-wash: rgba(224, 160, 40, 0.12); --c-edge: rgba(224, 160, 40, 0.32);
+    --c-glow: rgba(224, 160, 40, 0.30); --c-on: #241803;
+  }
+  [data-palette="amber"][data-theme="light"] {
+    --c: #93600a; --c-bright: #a86e10; --c-deep: #7a4e06;
+    --c-wash: rgba(147, 96, 10, 0.10); --c-edge: rgba(147, 96, 10, 0.28);
+    --c-glow: rgba(147, 96, 10, 0.22); --c-on: #fff8e8;
+  }
+  [data-palette="blue"] {
+    --c: #4aa8ff; --c-bright: #86c8ff; --c-deep: #1d6fc4;
+    --c-wash: rgba(74, 168, 255, 0.12); --c-edge: rgba(74, 168, 255, 0.32);
+    --c-glow: rgba(74, 168, 255, 0.30); --c-on: #03182c;
+  }
+  [data-palette="blue"][data-theme="light"] {
+    --c: #1d6fc4; --c-bright: #3a8ad8; --c-deep: #155a9f;
+    --c-wash: rgba(29, 111, 196, 0.10); --c-edge: rgba(29, 111, 196, 0.28);
+    --c-glow: rgba(29, 111, 196, 0.22); --c-on: #f2f8ff;
+  }
+  [data-palette="cinnabar"] {
+    --c: #e2654a; --c-bright: #ff8f72; --c-deep: #b23f28;
+    --c-wash: rgba(226, 101, 74, 0.12); --c-edge: rgba(226, 101, 74, 0.32);
+    --c-glow: rgba(226, 101, 74, 0.30); --c-on: #2a0c05;
+  }
+  [data-palette="cinnabar"][data-theme="light"] {
+    --c: #b8442b; --c-bright: #c04a30; --c-deep: #9c3820;
+    --c-wash: rgba(184, 68, 43, 0.10); --c-edge: rgba(184, 68, 43, 0.28);
+    --c-glow: rgba(184, 68, 43, 0.22); --c-on: #fff3ef;
+  }
+  [data-palette="violet"] {
+    --c: #a98bf5; --c-bright: #c7b2ff; --c-deep: #7a55d6;
+    --c-wash: rgba(169, 139, 245, 0.12); --c-edge: rgba(169, 139, 245, 0.32);
+    --c-glow: rgba(169, 139, 245, 0.30); --c-on: #160b2e;
+  }
+  [data-palette="violet"][data-theme="light"] {
+    --c: #7350cc; --c-bright: #7a55d6; --c-deep: #5e3fae;
+    --c-wash: rgba(115, 80, 204, 0.10); --c-edge: rgba(115, 80, 204, 0.28);
+    --c-glow: rgba(115, 80, 204, 0.22); --c-on: #f8f5ff;
+  }
+  [data-palette="mint"] {
+    --c: #6fe3a6; --c-bright: #9df0c4; --c-deep: #34b478;
+    --c-wash: rgba(111, 227, 166, 0.12); --c-edge: rgba(111, 227, 166, 0.32);
+    --c-glow: rgba(111, 227, 166, 0.30); --c-on: #04140c;
+  }
+  [data-palette="mint"][data-theme="light"] {
+    --c: #12764a; --c-bright: #17915b; --c-deep: #0c5c39;
+    --c-wash: rgba(18, 118, 74, 0.10); --c-edge: rgba(18, 118, 74, 0.28);
+    --c-glow: rgba(18, 118, 74, 0.22); --c-on: #f0fff7;
+  }
+
+  /* ---------- 中性色：深色 ---------- */
+  [data-theme="dark"] {
+    --bg: #0a0d0c;
+    --bg-elev-1: #101412;
+    --bg-elev-2: #161b19;
+    --bg-elev-3: #1c2320;
+    --line-1: rgba(255, 255, 255, 0.07);
+    --line-2: rgba(255, 255, 255, 0.11);
+    --text: #f2f6f4;
+    --text-2: #a9b6b0;
+    --text-3: #808d87;
+    --text-4: #7a8580;
+    --glass-top: rgba(255, 255, 255, 0.05);
+    --glass-bottom: rgba(255, 255, 255, 0.022);
+    --card-top: rgba(255, 255, 255, 0.045);
+    --card-bottom: rgba(255, 255, 255, 0.008);
+    --inset-hi: rgba(255, 255, 255, 0.05);
+    --sh-panel: 0 24px 60px rgba(0, 0, 0, 0.55), 0 2px 8px rgba(0, 0, 0, 0.4);
+    --sh-menu: 0 24px 60px rgba(0, 0, 0, 0.55);
+    --sh-reel: 0 12px 40px rgba(0, 0, 0, 0.25);
+    --sh-reel-land: 0 18px 50px rgba(0, 0, 0, 0.3);
+    --menu-bg: rgba(22, 27, 25, 0.96);
+    --overlay-bg: rgba(5, 8, 7, 0.74);
+    --timer-bg-1: #0b100f;
+    --timer-bg-2: #070b0a;
+    --track-empty: rgba(255, 255, 255, 0.07);
+    --chip-bg: rgba(255, 255, 255, 0.035);
+    --hover-bg: rgba(255, 255, 255, 0.055);
+    --kbd-bg: rgba(255, 255, 255, 0.055);
+    --slider-thumb: linear-gradient(180deg, #ffffff, #e2e6e4);
+  }
+  /* ---------- 中性色：浅色 ---------- */
+  [data-theme="light"] {
+    --bg: #f4f5f2;
+    --bg-elev-1: #ffffff;
+    --bg-elev-2: #ffffff;
+    --bg-elev-3: #ffffff;
+    --line-1: rgba(18, 24, 21, 0.09);
+    --line-2: rgba(18, 24, 21, 0.14);
+    --text: #141a17;
+    --text-2: #46524d;
+    --text-3: #5f6b65;
+    --text-4: #676f6a;
+    --glass-top: #ffffff;
+    --glass-bottom: #fafbf9;
+    --card-top: rgba(255, 255, 255, 0.95);
+    --card-bottom: rgba(255, 255, 255, 0.68);
+    --inset-hi: rgba(255, 255, 255, 0.9);
+    --sh-panel: 0 20px 48px rgba(18, 24, 21, 0.14), 0 2px 8px rgba(18, 24, 21, 0.06);
+    --sh-menu: 0 20px 48px rgba(18, 24, 21, 0.16), 0 2px 8px rgba(18, 24, 21, 0.07);
+    --sh-reel: 0 10px 30px rgba(18, 24, 21, 0.07);
+    --sh-reel-land: 0 16px 40px rgba(18, 24, 21, 0.11);
+    --menu-bg: rgba(255, 255, 255, 0.97);
+    --overlay-bg: rgba(30, 36, 33, 0.35);
+    --timer-bg-1: #f6f7f4;
+    --timer-bg-2: #eceee9;
+    --track-empty: rgba(18, 24, 21, 0.10);
+    --chip-bg: rgba(18, 24, 21, 0.04);
+    --hover-bg: rgba(18, 24, 21, 0.055);
+    --kbd-bg: #ffffff;
+    --slider-thumb: linear-gradient(180deg, #ffffff, #f0f2ef);
+  }
+
+  :root {
+    --r-sm: 10px;
+    --r-md: 14px;
+    --r-lg: 18px;
+    --r-xl: 24px;
+    --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+    --ease-spring: cubic-bezier(0.34, 1.4, 0.44, 1);
+    --font: "PingFang SC", "Hiragino Sans GB", "Noto Sans SC",
+      "Source Han Sans SC", "Microsoft YaHei", system-ui, -apple-system,
+      "Segoe UI", sans-serif;
+    --font-num: ui-rounded, "SF Pro Rounded", "PingFang SC", system-ui, sans-serif;
+    color-scheme: dark;
+  }
+  [data-theme="light"] { color-scheme: light; }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html { -webkit-text-size-adjust: 100%; }
+
+  body {
+    font-family: var(--font);
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.55;
+    min-height: 100dvh;
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    transition: background 0.35s var(--ease-out), color 0.35s var(--ease-out);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--c);
+    outline-offset: 2px;
+    border-radius: var(--r-sm);
+  }
+
+  svg { display: block; }
+
+  /* ---------- 背景氛围 ---------- */
+  .atmosphere {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    background:
+      radial-gradient(1100px 620px at 50% -14%, var(--c-wash), transparent 68%),
+      radial-gradient(760px 520px at 88% 108%, var(--c-wash), transparent 66%),
+      linear-gradient(180deg, var(--bg) 0%, var(--bg) 60%);
+    transition: background 0.35s var(--ease-out);
+  }
+
+  /* ---------- 页面骨架 ---------- */
+  .page {
+    position: relative;
+    z-index: 1;
+    max-width: 680px;
+    margin: 0 auto;
+    /* 左右/顶部安全区：横屏时避开刘海与灵动岛，竖屏时避开状态栏 */
+    padding: max(30px, env(safe-area-inset-top)) max(22px, env(safe-area-inset-right))
+             calc(60px + env(safe-area-inset-bottom)) max(22px, env(safe-area-inset-left));
+    min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+
+  .brand { display: flex; flex-direction: column; gap: 7px; }
+  .brand-mark {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 11.5px;
+    font-weight: 600;
+    letter-spacing: 0.26em;
+    text-transform: uppercase;
+    color: var(--c);
+    transition: color 0.35s var(--ease-out);
+  }
+  .brand-mark svg { width: 13px; height: 13px; opacity: 0.9; }
+  .brand-line { font-size: 15px; font-weight: 400; color: var(--text-3); letter-spacing: 0.01em; }
+
+  .stage { flex: 1; display: flex; flex-direction: column; gap: 18px; }
+
+  /* ---------- 模式切换 ---------- */
+  .mode-switch {
+    position: relative;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 3px;
+    padding: 4px;
+    background: linear-gradient(180deg, var(--glass-top), var(--glass-bottom));
+    border: 1px solid var(--line-1);
+    border-radius: 999px;
+    box-shadow: inset 0 1px 0 var(--inset-hi);
+  }
+  .mode-thumb {
+    position: absolute;
+    top: 4px; left: 4px; bottom: 4px;
+    width: calc(50% - 3.5px);
+    border-radius: 999px;
+    background: var(--c-wash);
+    border: 1px solid var(--c-edge);
+    box-shadow: 0 3px 14px var(--c-glow), inset 0 1px 0 var(--inset-hi);
+    transform: translateX(calc(var(--i, 0) * (100% + 3px)));
+    transition: transform 0.42s var(--ease-spring), background 0.35s, border-color 0.35s;
+  }
+  .mode-option {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px 10px;
+    min-height: 48px;
+    font-family: inherit;
+    font-size: 14.5px;
+    font-weight: 500;
+    letter-spacing: 0.01em;
+    color: var(--text-3);
+    background: none;
+    border: 0;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: color 0.3s var(--ease-out);
+  }
+  .mode-option svg { width: 16px; height: 16px; transition: transform 0.4s var(--ease-spring); }
+  .mode-option.is-active { color: var(--text); font-weight: 600; }
+  .mode-option.is-active svg { transform: scale(1.06); color: var(--c); }
+  .mode-option:disabled { cursor: not-allowed; opacity: 0.5; }
+  .mode-option:hover:not(:disabled):not(.is-active) { color: var(--text-2); }
+
+  .mode-blurb {
+    margin-top: 9px;
+    font-size: 13px;
+    color: var(--text-3);
+    text-align: center;
+    letter-spacing: 0.01em;
+  }
+
+  /* ---------- 领域选择器 ---------- */
+  .niche { position: relative; }
+  .niche-trigger {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    width: 100%;
+    padding: 13px 15px;
+    min-height: 54px;
+    font-family: inherit;
+    font-size: 14.5px;
+    font-weight: 500;
+    color: var(--text);
+    background: linear-gradient(180deg, var(--glass-top), var(--glass-bottom));
+    border: 1px solid var(--line-2);
+    border-radius: var(--r-md);
+    cursor: pointer;
+    box-shadow: inset 0 1px 0 var(--inset-hi);
+    transition: border-color 0.25s, background 0.25s;
+  }
+  .niche-trigger:hover:not(:disabled) { border-color: var(--c-edge); }
+  .niche-trigger:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  .niche-emoji {
+    display: grid;
+    place-items: center;
+    width: 32px;
+    height: 32px;
+    flex: 0 0 auto;
+    border-radius: 9px;
+    color: var(--c);
+    background: var(--c-wash);
+    border: 1px solid var(--c-edge);
+    transition: color 0.35s, background 0.35s, border-color 0.35s;
+  }
+  .niche-emoji svg { width: 16px; height: 16px; }
+
+  .niche-label { flex: 1; text-align: left; letter-spacing: 0.01em; }
+  .niche-count {
+    font-size: 11.5px;
+    font-weight: 500;
+    color: var(--text-4);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.02em;
+  }
+  .niche-caret {
+    width: 15px; height: 15px;
+    flex: 0 0 auto;
+    color: var(--text-4);
+    transition: transform 0.3s var(--ease-out), color 0.25s;
+  }
+  .niche-caret svg { width: 15px; height: 15px; }
+  .niche-trigger:hover .niche-caret { color: var(--text-2); }
+  .niche.is-open .niche-caret { transform: rotate(180deg); color: var(--c); }
+
+  .niche-menu {
+    position: absolute;
+    top: calc(100% + 7px);
+    left: 0; right: 0;
+    z-index: 30;
+    max-height: min(370px, 54dvh);
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 6px;
+    background: var(--menu-bg);
+    backdrop-filter: blur(20px) saturate(150%);
+    -webkit-backdrop-filter: blur(20px) saturate(150%);
+    border: 1px solid var(--line-2);
+    border-radius: var(--r-lg);
+    box-shadow: var(--sh-menu);
+    animation: menu-in 0.2s var(--ease-out);
+  }
+  @keyframes menu-in { from { opacity: 0; transform: translateY(-7px) scale(0.985); } }
+  .niche-menu::-webkit-scrollbar { width: 8px; }
+  .niche-menu::-webkit-scrollbar-thumb {
+    background: var(--line-2);
+    border-radius: 4px;
+    border: 2px solid transparent;
+    background-clip: content-box;
+  }
+
+  .niche-option {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    padding: 10px 11px;
+    min-height: 48px;
+    font-size: 14px;
+    color: var(--text-2);
+    border-radius: var(--r-sm);
+    cursor: pointer;
+    transition: background 0.16s, color 0.16s;
+  }
+  .niche-option .niche-emoji {
+    width: 28px; height: 28px;
+    background: var(--chip-bg);
+    border-color: var(--line-1);
+    color: var(--text-3);
+  }
+  .niche-option .niche-emoji svg { width: 15px; height: 15px; }
+  .niche-option:hover, .niche-option:focus-visible {
+    background: var(--hover-bg);
+    color: var(--text);
+    outline: none;
+  }
+  .niche-option.is-active { background: var(--c-wash); color: var(--c); font-weight: 600; }
+  .niche-option.is-active .niche-emoji {
+    color: var(--c);
+    background: var(--c-wash);
+    border-color: var(--c-edge);
+  }
+  .niche-option .niche-count { margin-left: auto; }
+  .niche-option.is-active .niche-count { color: var(--c); opacity: 0.75; }
+
+  /* ---------- 抽题展示区 ---------- */
+  .reel {
+    position: relative;
+    flex: 1;
+    min-height: 232px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 18px;
+    padding: 40px 26px;
+    text-align: center;
+    background:
+      radial-gradient(100% 70% at 50% 0%, var(--c-wash), transparent 55%),
+      linear-gradient(180deg, var(--card-top), var(--card-bottom));
+    border: 1px solid var(--line-1);
+    border-radius: var(--r-xl);
+    overflow: hidden;
+    box-shadow: inset 0 1px 0 var(--inset-hi), var(--sh-reel);
+    transition: border-color 0.5s var(--ease-out), box-shadow 0.5s var(--ease-out),
+      background 0.35s var(--ease-out);
+  }
+  .reel::before {
+    content: "";
+    position: absolute;
+    top: 0; left: 12%; right: 12%;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--c-edge), transparent);
+    opacity: 0;
+    transition: opacity 0.6s var(--ease-out);
+  }
+  .reel.is-landed {
+    border-color: var(--c-edge);
+    box-shadow: inset 0 1px 0 var(--inset-hi), 0 0 0 1px var(--c-wash), var(--sh-reel-land);
+  }
+  .reel.is-landed::before { opacity: 1; }
+
+  .reel-eyebrow {
+    font-size: 10.5px;
+    font-weight: 600;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    color: var(--text-4);
+    transition: color 0.3s;
+  }
+  .reel.is-landed .reel-eyebrow { color: var(--c); }
+
+  .reel-phrase {
+    position: relative;
+    font-size: clamp(35px, 9.8vw, 60px);
+    font-weight: 700;
+    line-height: 1.2;
+    letter-spacing: -0.015em;
+    max-width: 15ch;
+    word-break: break-word;
+    transition: color 0.35s var(--ease-out);
+  }
+  .reel.is-spinning .reel-phrase { color: var(--text-2); }
+  .reel.is-landed .reel-phrase { color: var(--text); animation: land 0.55s var(--ease-spring); }
+  @keyframes land {
+    0% { transform: scale(0.9); opacity: 0.55; }
+    55% { transform: scale(1.035); opacity: 1; }
+    100% { transform: scale(1); }
+  }
+  .reel.is-spinning { animation: breathe 1.4s ease-in-out infinite; }
+  @keyframes breathe { 50% { transform: translateY(-2px); } }
+
+  /* ---------- 按钮 ---------- */
+  .actions { display: flex; flex-direction: column; gap: 12px; }
+  .actions-main { display: flex; gap: 10px; }
+
+  .btn {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 9px;
+    padding: 16px 22px;
+    min-height: 54px;
+    font-family: inherit;
+    font-size: 15.5px;
+    font-weight: 600;
+    letter-spacing: 0.015em;
+    border-radius: var(--r-md);
+    border: 1px solid transparent;
+    cursor: pointer;
+    touch-action: manipulation;
+    transition: transform 0.16s var(--ease-out), box-shadow 0.24s, background 0.24s,
+      border-color 0.24s, opacity 0.2s, filter 0.2s;
+  }
+  .btn svg { width: 17px; height: 17px; flex: 0 0 auto; }
+  .btn:active:not(:disabled) { transform: scale(0.978); }
+  .btn:disabled { opacity: 0.34; cursor: not-allowed; }
+
+  .btn.primary {
+    flex: 1;
+    color: var(--c-on);
+    background: linear-gradient(180deg, var(--c-bright) 0%, var(--c) 46%, var(--c-deep) 100%);
+    box-shadow: 0 6px 20px var(--c-glow), inset 0 1px 0 rgba(255, 255, 255, 0.34);
+  }
+  .btn.primary:hover:not(:disabled) {
+    filter: brightness(1.05);
+    box-shadow: 0 8px 26px var(--c-glow), inset 0 1px 0 rgba(255, 255, 255, 0.4);
+  }
+  .btn.secondary {
+    flex: 1;
+    color: var(--text);
+    background: linear-gradient(180deg, var(--glass-top), var(--glass-bottom));
+    border-color: var(--line-2);
+    box-shadow: inset 0 1px 0 var(--inset-hi);
+  }
+  .btn.secondary:hover:not(:disabled) {
+    border-color: var(--c-edge);
+    background: var(--c-wash);
+  }
+  .btn.ghost {
+    padding: 10px 15px;
+    min-height: 44px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-3);
+    background: none;
+  }
+  .btn.ghost:hover:not(:disabled) { color: var(--text); background: var(--hover-bg); }
+
+  .footer-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  .kbd-hint {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    font-size: 11.5px;
+    color: var(--text-4);
+  }
+  kbd {
+    display: inline-block;
+    padding: 2px 6px;
+    font-family: inherit;
+    font-size: 10.5px;
+    font-weight: 600;
+    color: var(--text-2);
+    background: var(--kbd-bg);
+    border: 1px solid var(--line-2);
+    border-radius: 5px;
+    box-shadow: 0 1px 0 var(--line-1);
+  }
+
+  /* ---------- 遮罩 / 面板 ---------- */
+  .overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 60;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background: var(--overlay-bg);
+    backdrop-filter: blur(9px) saturate(130%);
+    -webkit-backdrop-filter: blur(9px) saturate(130%);
+    animation: fade 0.2s var(--ease-out);
+  }
+  @keyframes fade { from { opacity: 0; } }
+
+  .panel {
+    width: 100%;
+    max-width: 430px;
+    max-height: 88dvh;
+    overflow-y: auto;
+    padding: 26px;
+    background: linear-gradient(180deg, var(--bg-elev-3), var(--bg-elev-2));
+    border: 1px solid var(--line-2);
+    border-radius: var(--r-xl);
+    box-shadow: var(--sh-panel);
+    animation: panel-in 0.28s var(--ease-out);
+  }
+  @keyframes panel-in { from { opacity: 0; transform: translateY(14px) scale(0.985); } }
+  .panel-head h2 { font-size: 18.5px; font-weight: 700; letter-spacing: 0.01em; }
+  .panel-head p { font-size: 12.5px; color: var(--text-3); margin-top: 4px; }
+
+  /* ---------- 外观（深浅 + 配色） ---------- */
+  .field { margin-top: 24px; }
+  .field-label {
+    display: block;
+    font-size: 13.5px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 10px;
+  }
+  .theme-seg {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4px;
+    padding: 4px;
+    background: var(--chip-bg);
+    border: 1px solid var(--line-1);
+    border-radius: var(--r-md);
+  }
+  .theme-seg button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    padding: 11px 8px;
+    min-height: 46px;
+    font-family: inherit;
+    font-size: 13.5px;
+    font-weight: 600;
+    color: var(--text-3);
+    background: none;
+    border: 1px solid transparent;
+    border-radius: 11px;
+    cursor: pointer;
+    transition: all 0.2s var(--ease-out);
+  }
+  .theme-seg button svg { width: 15px; height: 15px; }
+  .theme-seg button:hover:not(.is-on) { color: var(--text); background: var(--hover-bg); }
+  .theme-seg button.is-on {
+    color: var(--text);
+    background: var(--bg-elev-1);
+    border-color: var(--line-2);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+  }
+  .theme-seg button.is-on svg { color: var(--c); }
+
+  .swatches { display: flex; gap: 10px; flex-wrap: wrap; }
+  .swatch {
+    position: relative;
+    width: 46px;
+    height: 46px;
+    padding: 0;
+    border-radius: 13px;
+    border: 1px solid var(--line-2);
+    background: var(--bg-elev-1);
+    cursor: pointer;
+    display: grid;
+    place-items: center;
+    transition: transform 0.18s var(--ease-spring), border-color 0.2s, box-shadow 0.2s;
+  }
+  .swatch i {
+    display: block;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: var(--sw);
+    box-shadow: inset 0 -2px 4px rgba(0, 0, 0, 0.18);
+  }
+  .swatch:hover { transform: translateY(-2px); }
+  .swatch.is-on {
+    border-color: var(--sw);
+    box-shadow: 0 0 0 2px var(--c-wash), 0 4px 14px var(--c-glow);
+  }
+  .swatch.is-on::after {
+    content: "";
+    position: absolute;
+    right: -3px; bottom: -3px;
+    width: 15px; height: 15px;
+    border-radius: 50%;
+    background: var(--sw);
+    border: 2px solid var(--bg-elev-2);
+  }
+  .swatch-name {
+    position: absolute;
+    width: 1px; height: 1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+  }
+  .field-hint { font-size: 11.5px; line-height: 1.6; color: var(--text-3); margin-top: 10px; }
+
+  /* ---------- 时长滑块 ---------- */
+  .duration-field { margin-top: 24px; }
+  .duration-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+  }
+  .duration-label { font-size: 13.5px; font-weight: 600; color: var(--text); }
+  .duration-value {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--c);
+    font-variant-numeric: tabular-nums;
+  }
+  .duration-slider {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 26px;
+    margin-top: 8px;
+    background: none;
+    cursor: pointer;
+    --pct: 0%;
+  }
+  .duration-slider:focus-visible { outline: none; }
+  .duration-slider:focus-visible::-webkit-slider-thumb {
+    box-shadow: 0 0 0 3px var(--c-wash), 0 2px 8px rgba(0, 0, 0, 0.35);
+  }
+  .duration-slider::-webkit-slider-runnable-track {
+    height: 5px;
+    border-radius: 3px;
+    background: linear-gradient(90deg,
+      var(--c) 0 var(--pct),
+      var(--track-empty) var(--pct) 100%);
+  }
+  .duration-slider::-moz-range-track {
+    height: 5px;
+    border-radius: 3px;
+    background: var(--track-empty);
+  }
+  .duration-slider::-moz-range-progress {
+    height: 5px;
+    border-radius: 3px;
+    background: var(--c);
+  }
+  .duration-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 20px; height: 20px;
+    margin-top: -8px;
+    border-radius: 50%;
+    background: var(--slider-thumb);
+    border: 3px solid var(--bg-elev-2);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+  }
+  .duration-slider::-moz-range-thumb {
+    width: 15px; height: 15px;
+    border-radius: 50%;
+    background: #ffffff;
+    border: 3px solid var(--bg-elev-2);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+  }
+  .duration-ends {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 4px;
+    font-size: 11px;
+    color: var(--text-4);
+    font-variant-numeric: tabular-nums;
+  }
+  .duration-hint { font-size: 11.5px; line-height: 1.6; color: var(--text-3); margin-top: 8px; }
+
+  .check-row {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    margin-top: 24px;
+    padding: 13px 15px;
+    font-size: 14px;
+    color: var(--text-2);
+    background: var(--chip-bg);
+    border: 1px solid var(--line-1);
+    border-radius: var(--r-md);
+    cursor: pointer;
+    transition: border-color 0.2s, background 0.2s, color 0.2s;
+  }
+  .check-row:hover { border-color: var(--line-2); }
+  .check-row input {
+    width: 17px; height: 17px;
+    flex: 0 0 auto;
+    accent-color: var(--c);
+    cursor: pointer;
+  }
+  .check-row input:focus-visible { outline: 2px solid var(--c); outline-offset: 2px; }
+  .check-row:has(input:checked) {
+    border-color: var(--c-edge);
+    background: var(--c-wash);
+    color: var(--text);
+  }
+  .panel-note { font-size: 11.5px; line-height: 1.65; color: var(--text-3); margin-top: 14px; }
+
+  /* ---------- 全屏计时器 ---------- */
+  .timer {
+    position: fixed;
+    inset: 0;
+    z-index: 80;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 22px;
+    padding: max(30px, env(safe-area-inset-top)) max(24px, env(safe-area-inset-right))
+             calc(30px + env(safe-area-inset-bottom)) max(24px, env(safe-area-inset-left));
+    text-align: center;
+    background:
+      radial-gradient(820px 560px at 50% 42%, var(--c-wash), transparent 66%),
+      linear-gradient(180deg, var(--timer-bg-1) 0%, var(--timer-bg-2) 100%);
+    animation: fade 0.26s var(--ease-out);
+    transition: background 0.35s var(--ease-out);
+  }
+  .timer > * { flex: 0 0 auto; position: relative; z-index: 1; }
+  /* 打开计时页会自动聚焦到按钮，焦点环收轻，避免在触屏上变成视觉噪音 */
+  .timer :focus-visible { outline: 2px solid var(--c-edge); outline-offset: 2px; }
+
+  /* ---------- 时间到：整屏状态切换 ---------- */
+  /* 屏幕闪烁：用 accent 光晕扫过，余光里也能看见，不依赖读字 */
+  .timer.is-done {
+    animation: timeup-flash 1.4s var(--ease-out) 3;
+  }
+  @keyframes timeup-flash {
+    0%, 100% { box-shadow: inset 0 0 0 0 var(--c-wash); }
+    45% { box-shadow: inset 0 0 200px 34px var(--c-wash); }
+  }
+  .timer.is-done .timer-label { color: var(--c); }
+
+  /* 横幅：标题 + 用时 */
+  .timeup {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+    margin-top: -4px;
+  }
+  .timer.is-done .timeup { display: flex; animation: timeup-in 0.5s var(--ease-spring); }
+  @keyframes timeup-in {
+    from { opacity: 0; transform: scale(0.85) translateY(8px); }
+  }
+  .timeup-title {
+    font-size: clamp(30px, 9vw, 46px);
+    font-weight: 800;
+    line-height: 1.1;
+    letter-spacing: 0.06em;
+    color: var(--c);
+    text-shadow: 0 0 28px var(--c-glow);
+  }
+  .timeup-sub {
+    font-size: 13px;
+    color: var(--text-2);
+    letter-spacing: 0.01em;
+  }
+  /* 时间到后：数字让位给横幅，圆环转为呼吸提示 */
+  .timer.is-done .ring-wrap { display: none; }
+  .timer.is-done .timer-topic { color: var(--text-2); }
+  /* 三段结构提示是为「还在讲」服务的，讲完就该让位，别留着分心 */
+  .timer.is-done .cues { display: none; }
+
+  .timer-label {
+    font-size: 10.5px;
+    font-weight: 600;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--text-4);
+  }
+  .timer-topic {
+    font-size: clamp(21px, 5.6vw, 30px);
+    font-weight: 700;
+    line-height: 1.32;
+    letter-spacing: -0.01em;
+    color: var(--text);
+    max-width: 20ch;
+    word-break: break-word;
+  }
+
+  .ring-wrap { position: relative; display: grid; place-items: center; }
+  .ring-wrap .ring {
+    width: clamp(196px, 48vw, 212px);
+    height: clamp(196px, 48vw, 212px);
+    transform: rotate(-90deg);
+  }
+  .ring circle { fill: none; stroke-width: 5.5; stroke-linecap: round; }
+  .ring .track { stroke: var(--track-empty); stroke-width: 3.5; }
+  .ring .bar {
+    stroke: var(--c);
+    transition: stroke-dashoffset 0.32s linear, stroke 0.4s;
+    filter: drop-shadow(0 0 9px var(--c-glow));
+  }
+  .ring-wrap.is-warning .ring .bar {
+    stroke: #ffc978;
+    filter: drop-shadow(0 0 9px rgba(255, 201, 120, 0.38));
+  }
+  .ring-wrap.is-critical .ring .bar {
+    stroke: #ff8a72;
+    filter: drop-shadow(0 0 11px rgba(255, 138, 114, 0.45));
+  }
+
+  .ring-time {
+    position: absolute;
+    font-family: var(--font-num);
+    font-size: clamp(54px, 15.5vw, 82px);
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: -0.03em;
+    color: var(--text);
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum" 1;
+  }
+  .ring-time.is-critical { color: #ff8a72; animation: pulse 1s ease-in-out infinite; }
+  @keyframes pulse { 50% { opacity: 0.5; } }
+
+  .cues { display: flex; flex-wrap: wrap; justify-content: center; gap: 9px; max-width: 460px; }
+  .cue {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 8px 15px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-3);
+    background: var(--chip-bg);
+    border: 1px solid var(--line-1);
+    border-radius: 999px;
+    transition: all 0.42s var(--ease-out);
+  }
+  .cue::before {
+    content: "";
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    background: currentColor;
+    opacity: 0.35;
+    transition: opacity 0.3s, transform 0.3s;
+  }
+  .cue.is-active {
+    color: var(--c-on);
+    font-weight: 700;
+    background: linear-gradient(180deg, var(--c-bright), var(--c));
+    border-color: transparent;
+    box-shadow: 0 4px 16px var(--c-glow), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+    transform: translateY(-1px);
+  }
+  .cue.is-active::before { opacity: 1; transform: scale(1.15); }
+
+  .timer-actions { display: flex; flex-direction: column; gap: 10px; width: 100%; max-width: 344px; }
+  .timer-actions .row { display: flex; gap: 10px; }
+  .timer-actions .row .btn { flex: 1; min-height: 48px; font-size: 14.5px; }
+  .timer-actions .btn.primary { min-height: 54px; }
+  .timer-actions .btn.ghost { min-height: 44px; }
+  .timer-note { font-size: 11.5px; line-height: 1.7; color: var(--text-4); max-width: 340px; }
+
+  .sr-only {
+    position: absolute;
+    width: 1px; height: 1px;
+    padding: 0; margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  /* ---------- 响应式 ---------- */
+  /* 大屏：按「高度」而不是「宽度」判断。
+     手机横屏宽度够但高度只有 ~390，用宽度判断会把圆环放大到溢出视口。 */
+  @media (min-height: 700px) {
+    .timer { gap: 26px; }
+    .timer-topic { font-size: 34px; max-width: 26ch; }
+    .ring-wrap .ring { width: 248px; height: 248px; }
+    .ring-time { font-size: 96px; }
+    .cues { max-width: 540px; gap: 10px; }
+    .cue { font-size: 14px; padding: 9px 18px; }
+    .timer-actions { max-width: 400px; }
+    .timer-actions .row .btn { min-height: 52px; font-size: 15px; }
+  }
+
+  /* 矮屏 / 手机横屏：整体收紧，保证按钮一定在视口内可点 */
+  @media (max-height: 640px) {
+    .timer {
+      gap: 12px;
+      padding: max(14px, env(safe-area-inset-top)) max(20px, env(safe-area-inset-right))
+               calc(12px + env(safe-area-inset-bottom)) max(20px, env(safe-area-inset-left));
+    }
+    .timer-topic { font-size: 20px; max-width: 30ch; }
+    .ring-wrap .ring { width: 150px; height: 150px; }
+    .ring-time { font-size: 42px; }
+    .cues { gap: 7px; max-width: 420px; }
+    .cue { font-size: 12px; padding: 6px 12px; }
+    .timer-actions { gap: 8px; max-width: 360px; }
+    .timer-actions .row .btn { min-height: 44px; font-size: 13.5px; }
+    .timer-actions .btn.secondary { min-height: 46px; }
+    .timer-note { font-size: 11px; }
+    .page {
+      padding: max(18px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right))
+               calc(30px + env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left));
+      gap: 18px;
+    }
+    .reel { min-height: 190px; padding: 26px 18px; }
+  }
+  @media (max-width: 420px) {
+    .page {
+      padding: max(24px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right))
+               calc(46px + env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left));
+      gap: 20px;
+    }
+    .reel { min-height: 220px; padding: 30px 20px; border-radius: var(--r-lg); }
+    .btn { font-size: 15px; padding: 15px 16px; min-height: 52px; }
+    .kbd-hint { display: none; }
+    .footer-row { justify-content: flex-end; }
+    .panel { padding: 22px 20px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::after, *::before {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+</style>
+</head>
+<body>
+<div class="atmosphere" aria-hidden="true"></div>
+
+<div class="page">
+  <header class="brand">
+    <p class="brand-mark">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l1.9 5.6L19.5 10l-5.6 1.9L12 17.5l-1.9-5.6L4.5 10l5.6-1.4L12 3z"/></svg>
+      即兴一分钟
+    </p>
+    <h1 class="brand-line">抽一个题，讲满一分钟</h1>
+  </header>
+
+  <main class="stage" id="stage">
+    <div>
+      <div class="mode-switch" role="radiogroup" aria-label="练习模式">
+        <span class="mode-thumb" aria-hidden="true" id="modeThumb"></span>
+        <button type="button" class="mode-option is-active" role="radio" aria-checked="true" data-mode="off-the-cuff">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9.4 17.2a6 6 0 1 1 5.2 0v1.5a2 2 0 0 1-2 2h-1.2a2 2 0 0 1-2-2v-1.5Z"/><path d="M9.8 20.8h4.4"/></svg>
+          <span>临场直接讲</span>
+        </button>
+        <button type="button" class="mode-option" role="radio" aria-checked="false" data-mode="deep-research">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="6.2"/><path d="M15.6 15.6L20.5 20.5"/></svg>
+          <span>先查再讲</span>
+        </button>
+      </div>
+      <p class="mode-blurb" id="modeBlurb"></p>
+    </div>
+
+    <div class="niche" id="niche">
+      <button type="button" class="niche-trigger" id="nicheTrigger" aria-haspopup="listbox" aria-expanded="false">
+        <span class="niche-emoji" id="nicheEmoji" aria-hidden="true"></span>
+        <span class="niche-label" id="nicheLabel">日常杂谈</span>
+        <span class="niche-count" id="nicheCount"></span>
+        <span class="niche-caret" aria-hidden="true"></span>
+      </button>
+      <div class="niche-menu" id="nicheMenu" role="listbox" aria-label="话题领域" hidden></div>
+    </div>
+
+    <section class="reel" id="reel">
+      <p class="reel-eyebrow" id="reelEyebrow">准备就绪</p>
+      <p class="reel-phrase" id="reelPhrase" aria-live="polite">点击抽题</p>
+    </section>
+
+    <div class="actions">
+      <div class="actions-main">
+        <button type="button" class="btn primary" id="spinBtn"></button>
+        <button type="button" class="btn secondary" id="startBtn" disabled>开始计时</button>
+      </div>
+      <div class="footer-row">
+        <p class="kbd-hint">
+          <kbd>空格</kbd><span>抽题</span>
+          <kbd>回车</kbd><span>开始</span>
+          <kbd>Esc</kbd><span>结束</span>
+        </p>
+        <button type="button" class="btn ghost" id="settingsBtn"></button>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  /* ============================================================
+     外观：5 套配色 × 深浅两种底色
+     默认「青蓝」。改这里就能加配色，记得深浅各给一套。
+     ============================================================ */
+  // swatch 是深色模式下的色值，swatchLight 是浅色模式下的版本，
+  // 必须与 CSS 里的 --c 一致，否则浏览器图标会和按钮不同色
+  var PALETTES = [
+    { id: "blue",     name: "青蓝",   swatch: "#4aa8ff", swatchLight: "#1d6fc4" },
+    { id: "amber",    name: "暖琥珀", swatch: "#e0a028", swatchLight: "#93600a" },
+    { id: "cinnabar", name: "朱砂红", swatch: "#e2654a", swatchLight: "#b8442b" },
+    { id: "violet",   name: "紫罗兰", swatch: "#a98bf5", swatchLight: "#7350cc" },
+    { id: "mint",     name: "薄荷绿", swatch: "#6fe3a6", swatchLight: "#12764a" }
+  ];
+  var DEFAULT_PALETTE = "blue";
+
+  // 浏览器图标：和页面同一套视觉语言（计时环 + 已走过的弧 + 指针），跟随主题与配色
+  function faviconHref(accent) {
+    var light = document.documentElement.dataset.theme === "light";
+    var svg =
+      "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'>" +
+        "<rect width='32' height='32' rx='8' fill='%23" + (light ? "f4f5f2" : "101412") + "'/>" +
+        "<circle cx='16' cy='16' r='9' fill='none' stroke='%23" + (light ? "c9cfcb" : "3d4442") + "' stroke-width='3'/>" +
+        "<path d='M16 7a9 9 0 0 1 9 9' fill='none' stroke='%23" + accent.replace("#", "") + "' stroke-width='3' stroke-linecap='round'/>" +
+        "<path d='M16 16l3.6-3.6' stroke='%23" + (light ? "141a17" : "f2f6f4") + "' stroke-width='2.6' stroke-linecap='round'/>" +
+      "</svg>";
+    return "data:image/svg+xml," + svg;
+  }
+
+  // 当前主题下该配色的实际强调色，保证 favicon 与页面按钮同色
+  function currentSwatch() {
+    var light = state.theme === "light";
+    for (var i = 0; i < PALETTES.length; i++) {
+      if (PALETTES[i].id === state.palette) {
+        return light ? PALETTES[i].swatchLight : PALETTES[i].swatch;
+      }
+    }
+    return PALETTES[0].swatch;
+  }
+
+  function applyAppearance() {
+    var root = document.documentElement;
+    root.dataset.theme = state.theme;
+    root.dataset.palette = state.palette;
+    var link = document.getElementById("favicon");
+    if (link) link.setAttribute("href", faviconHref(currentSwatch()));
+    var meta = document.querySelector('meta[name="theme-color"]');
+    if (meta) meta.setAttribute("content", state.theme === "light" ? "#f4f5f2" : "#0a0d0c");
+  }
+
+  /* ============================================================
+     图标（内联 SVG，避免 emoji 在不同系统上渲染不一致）
+     ============================================================ */
+  var I = {
+    spin: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.6-5.9"/><path d="M20 3.6v4.2h-4.2"/></svg>',
+    gear: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3.3"/><path d="M19.5 12c0-.5-.05-1-.14-1.47l1.9-1.4-1.9-3.29-2.2.9a7.6 7.6 0 0 0-2.54-1.47L14.3 3h-3.8l-.32 2.27a7.6 7.6 0 0 0-2.54 1.47l-2.2-.9-1.9 3.29 1.9 1.4a7.7 7.7 0 0 0 0 2.94l-1.9 1.4 1.9 3.29 2.2-.9a7.6 7.6 0 0 0 2.54 1.47L10.5 21h3.8l.32-2.27a7.6 7.6 0 0 0 2.54-1.47l2.2.9 1.9-3.29-1.9-1.4c.09-.47.14-.97.14-1.47Z"/></svg>',
+    caret: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9.5l6 6 6-6"/></svg>',
+    spark: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.9 5.6L19.5 10l-5.6 1.9L12 17.5l-1.9-5.6L4.5 10l5.6-1.4L12 3z"/></svg>',
+    bulb: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9.4 17.2a6 6 0 1 1 5.2 0v1.5a2 2 0 0 1-2 2h-1.2a2 2 0 0 1-2-2v-1.5Z"/><path d="M9.8 20.8h4.4"/></svg>',
+    grid: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="3.5" width="7" height="7" rx="2"/><rect x="13.5" y="3.5" width="7" height="7" rx="2"/><rect x="3.5" y="13.5" width="7" height="7" rx="2"/><rect x="13.5" y="13.5" width="7" height="7" rx="2"/></svg>',
+    robot: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="7.5" width="16" height="12" rx="3.2"/><path d="M12 7.5V4.2"/><circle cx="12" cy="3.2" r="1.1"/><path d="M9.2 12.2v1.6M14.8 12.2v1.6"/><path d="M9.6 16.4h4.8"/></svg>',
+    rocket: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M13.5 4.8c3.3-1.4 5.7-1.2 5.7-1.2s.2 2.4-1.2 5.7c-1.2 2.8-3.3 5-5.6 6.5l-3.4-.8-1.3-1.3-.8-3.4c1.5-2.3 3.7-4.4 6.6-5.5Z"/><circle cx="14.4" cy="9.6" r="1.5"/><path d="M7.6 16.4c-.9.9-1.2 3.6-1.2 3.6s2.7-.3 3.6-1.2"/></svg>',
+    sprout: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20v-6.5"/><path d="M12 13.5C12 10.5 9.6 8.2 6.4 8.2c0 3.2 2.4 5.3 5.6 5.3Z"/><path d="M12 13.5c0-3 2.4-5.3 5.6-5.3 0 3.2-2.4 5.3-5.6 5.3Z"/></svg>',
+    coin: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="7" rx="7" ry="3.2"/><path d="M5 7v10c0 1.8 3.1 3.2 7 3.2s7-1.4 7-3.2V7"/><path d="M5 12c0 1.8 3.1 3.2 7 3.2s7-1.4 7-3.2"/></svg>',
+    wrench: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15.2 4.4a4.6 4.6 0 0 1 5.9 6.2l-3-3-2.5 2.5 3 3a4.6 4.6 0 0 1-6.2-5.9l-6 6a2.1 2.1 0 1 0 3 3l6-6"/></svg>',
+    heart: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20s-7-4.3-7-9.3A3.9 3.9 0 0 1 12 8.4a3.9 3.9 0 0 1 7 2.3c0 5-7 9.3-7 9.3Z"/></svg>',
+    search: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="6.2"/><path d="M15.6 15.6L20.5 20.5"/></svg>',
+    moon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14.2A8.2 8.2 0 0 1 9.8 4a8.2 8.2 0 1 0 10.2 10.2Z"/></svg>',
+    sun: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2.6v2.2M12 19.2v2.2M4.2 4.2l1.6 1.6M18.2 18.2l1.6 1.6M2.6 12h2.2M19.2 12h2.2M4.2 19.8l1.6-1.6M18.2 5.8l1.6-1.6"/></svg>'
+  };
+
+  /* ============================================================
+     题库：通用 + 你的领域
+     想改题就改这里，其他代码都不用动。
+     加一个新领域 = 往 NICHES 里加一项 { id, label, icon, topics: [...] }
+     ============================================================ */
+
+  var RESEARCH = {
+    id: "deep-research",
+    label: "深度研究",
+    icon: I.search,
+    topics: [
+      "富兰克林效应", "透明度错觉", "情感预测偏差", "聚焦效应", "历史终结错觉",
+      "讽刺性反弹", "情绪标注", "谢林点", "针锋相对为何让好人赢", "消耗战",
+      "昂贵的信号", "志愿者困境", "猎鹿博弈", "鸵鸟效应", "赌场资金效应",
+      "折中效应", "面额效应", "检察官谬误", "辛普森悖论", "伯克森悖论",
+      "小数定律", "假阳性悖论", "林迪效应", "邓宁-克鲁格效应", "锚定效应",
+      "损失厌恶", "沉没成本谬误", "基本归因错误", "确认偏误", "幸存者偏差",
+      "第二序思维", "古德哈特定律", "坎贝尔定律", "路径依赖", "局部最优陷阱",
+      "反脆弱", "遍历性", "规模效应", "网络效应的临界点", "复利的数学本质"
+    ]
+  };
+
+  var NICHES = [
+    {
+      id: "daily", label: "日常杂谈", icon: I.spark,
+      topics: [
+        "通勤路上", "群聊", "自动纠错", "门铃", "副驾驶", "旧手机", "外卖迟到",
+        "Wi-Fi 密码", "排队", "快递柜", "丢伞", "闹钟", "买菜", "理发", "洗衣服",
+        "搬东西", "菜市场砍价", "电梯里的沉默", "第一次做饭", "被叫错名字",
+        "空调温度之争", "邻居的声音", "取快递时遇到熟人", "地铁让座", "剩菜",
+        "超市自助结账", "行李箱轮子", "手机电量 1%", "共享单车", "小区门禁",
+        "洗好的碗放哪", "室友的冰箱", "凌晨三点的便利店", "剪头发时说话",
+        "旅行装箱", "重复的梦", "天气预报不准", "打折陷阱", "停车场找车位",
+        "备忘录里最久的一条"
+      ]
+    },
+    {
+      id: "mental-model", label: "思维模型", icon: I.grid,
+      topics: [
+        "第一性原理", "奥卡姆剃刀", "帕累托法则", "逆向思维", "地图不是疆域",
+        "能力圈", "幸存者偏差", "熵增与秩序", "黑天鹅", "灰犀牛",
+        "反共识而正确", "第二序思维", "安全边际", "关注圈与影响圈", "复利"
+      ]
+    },
+    {
+      id: "ai-agent", label: "AI 与智能体", icon: I.robot,
+      topics: [
+        "大模型幻觉", "上下文窗口", "提示词工程", "智能体工作流", "工具调用",
+        "检索增强生成（RAG）", "微调", "模型蒸馏", "推理成本", "算力与延迟",
+        "开源模型", "合成数据", "数据飞轮", "自动化偏见", "AI 味的文字",
+        "人机协作的边界", "记忆机制", "多智能体协作", "评测集", "对齐",
+        "AI 会不会取代初级岗位", "把 AI 当同事还是当工具", "幻觉与创造力的界限",
+        "上下文工程", "模型选型", "本地部署 vs 调用 API", "AI 产品的护城河",
+        "什么工作不该交给 AI"
+      ]
+    },
+    {
+      id: "solo", label: "一人公司与自由职业", icon: I.rocket,
+      topics: [
+        "睡后收入", "接单与报价", "客户预期管理", "复购", "个人品牌",
+        "最小可行服务", "时间定价 vs 价值定价", "一人公司的天花板",
+        "现金流优先", "拒绝一个客户", "私域", "口碑传播", "定价心理学",
+        "远程协作", "给自己发工资", "把技能产品化", "订阅制", "雇佣第一个帮手",
+        "淡季怎么过", "合同与预付款", "被抄了怎么办", "一个人的品牌露出"
+      ]
+    },
+    {
+      id: "startup", label: "产品与创业", icon: I.sprout,
+      topics: [
+        "最小可行产品", "冷启动", "用户访谈", "留存率", "增长飞轮",
+        "护城河", "单位经济模型", "首批种子用户", "产品市场契合", "早熟的规模化",
+        "做减法", "需求真伪", "分发能力", "合伙人选择", "融资的代价",
+        "先做小工具还是做平台", "免费用户的价值", "产品债", "上线第一个版本",
+        "怎么判断该转型", "创始人模式", "从 0 到 1 与从 1 到 10"
+      ]
+    },
+    {
+      id: "money", label: "理财与投资", icon: I.coin,
+      topics: [
+        "应急金", "复利", "生活方式膨胀", "沉没成本", "机会成本",
+        "净资产", "现金流", "高息负债", "风险承受度", "分散配置",
+        "定投", "仓位管理", "安全边际", "能力圈", "周期",
+        "现金是氧气", "长期主义", "回撤", "追涨杀跌", "闲钱",
+        "记账", "该不该买保险", "第一笔投资", "亏损时的心态",
+        "工资以外的收入", "消费与投资的界限", "怎么看待别人的收益截图"
+      ]
+    },
+    {
+      id: "dev", label: "开发与技术", icon: I.wrench,
+      topics: [
+        "技术债", "过早优化", "可观测性", "单点故障", "容器化",
+        "自动化测试", "重构的时机", "代码评审", "命名", "文档",
+        "选型焦虑", "脚手架", "灰度发布", "性能优化的顺序", "日志",
+        "缓存", "幂等", "数据迁移", "开关与配置", "上线前的检查清单",
+        "为什么要写测试", "开源与自建", "删掉代码的勇气",
+        "技术选型该听谁的", "接手别人的项目",
+        "一个人能不能维护一个产品", "AI 结对编程", "把脚本变成产品"
+      ]
+    },
+    {
+      id: "wellbeing", label: "身心状态", icon: I.heart,
+      topics: [
+        "渐进超负荷", "休息日", "肌肉记忆", "形式大于重量", "平台期",
+        "热身", "稳定胜过强度", "睡眠", "恢复债", "呼吸",
+        "久坐", "喝水", "每天走一万步", "什么算进步", "心理能量",
+        "专注的时段", "放空", "拖延的真正原因", "和自己比较"
+      ]
+    }
+  ];
+
+  var MODES = [
+    { id: "off-the-cuff", label: "临场直接讲", icon: I.bulb,
+      blurb: "不给准备时间，抽到就开口。练的是临场组织语言。" },
+    { id: "deep-research", label: "先查再讲", icon: I.search,
+      blurb: "抽题后先给研究倒计时，准备好再开始讲。练的是表达深度。" }
+  ];
+
+  var CUES = ["是什么？", "所以呢？", "然后呢？"];
+
+  /* ============================================================
+     工具函数
+     ============================================================ */
+
+  var PREFIX = "speak60:";
+
+  function $(id) { return document.getElementById(id); }
+  function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+  function clamp(n, min, max) { return Math.min(max, Math.max(min, n)); }
+
+  function fmtClock(sec) {
+    sec = Math.max(0, Math.floor(sec));
+    return Math.floor(sec / 60) + ":" + String(sec % 60).padStart(2, "0");
+  }
+  function fmtText(sec) {
+    sec = Math.max(0, Math.floor(sec));
+    var m = Math.floor(sec / 60), s = sec % 60;
+    if (m && s) return m + " 分 " + s + " 秒";
+    if (m) return m + " 分";
+    if (!sec) return "0 秒";
+    return s + " 秒";
+  }
+
+  function save(key, val) {
+    try { localStorage.setItem(PREFIX + key, String(val)); } catch (e) {}
+  }
+  function load(key, fallback) {
+    try {
+      var v = localStorage.getItem(PREFIX + key);
+      return v === null ? fallback : v;
+    } catch (e) { return fallback; }
+  }
+  function loadBool(key, fallback) {
+    var v = load(key, null);
+    return v === null ? fallback : v === "true";
+  }
+
+  function easeOutCubic(t) { return 1 - Math.pow(1 - t, 3); }
+
+  function planSpin(index, total, rand) {
+    rand = rand || Math.random;
+    var turns = 3 + Math.floor(rand() * 3);
+    var extra = total > 1 ? 1 + Math.floor(rand() * (total - 1)) : 0;
+    return { steps: turns * total + extra, landIndex: (index + turns * total + extra) % total };
+  }
+
+  /* ============================================================
+     音效
+     ============================================================ */
+
+  var audioCtx = null;
+
+  // iOS Safari 要求 AudioContext 必须在一次真实用户手势里被创建或恢复，
+  // 之后才允许出声。所以每次点击都主动解锁一次（幂等，代价极低）。
+  function unlockAudio() {
+    try {
+      var Ctx = window.AudioContext || window.webkitAudioContext;
+      if (!Ctx) return null;
+      if (!audioCtx) audioCtx = new Ctx();
+      if (audioCtx.state === "suspended" && audioCtx.resume) audioCtx.resume();
+      return audioCtx;
+    } catch (e) { return null; }
+  }
+
+  // resume() 是异步的。必须等它真的进入 running 再排程振荡器，
+  // 否则 iOS 上第一次发声会被静默丢弃（表现为「第一声不响」）。
+  function ensureAudio(cb) {
+    var ctx = unlockAudio();
+    if (!ctx) return;
+    if (ctx.state === "running") { cb(ctx); return; }
+    var done = false;
+    var run = function () { if (!done) { done = true; cb(ctx); } };
+    try {
+      var p = ctx.resume();
+      if (p && p.then) p.then(run, function () {});
+      else run();
+    } catch (e) { run(); }
+    // 兜底：resume 的 Promise 在个别浏览器上不 settle，也不能让声音彻底哑掉
+    setTimeout(function () { if (ctx.state === "running") run(); }, 90);
+  }
+
+  function tone(freqs, duration) {
+    if (state.muted) return;
+    ensureAudio(function (ctx) {
+      try {
+        var now = ctx.currentTime;
+        var each = duration / freqs.length;
+        freqs.forEach(function (f, i) {
+          var osc = ctx.createOscillator();
+          var gain = ctx.createGain();
+          osc.type = "sine";
+          osc.frequency.value = f;
+          var start = now + i * each;
+          gain.gain.setValueAtTime(0, start);
+          gain.gain.linearRampToValueAtTime(0.12, start + 0.015);
+          gain.gain.exponentialRampToValueAtTime(0.0001, start + each);
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start(start);
+          osc.stop(start + each + 0.02);
+        });
+      } catch (e) {}
+    });
+  }
+
+  // 手机上的轻振动反馈：Android 支持，iOS Safari 会静默忽略（不报错）
+  function buzz(pattern) {
+    if (state.muted || alerting) return;
+    try {
+      if (navigator.vibrate) navigator.vibrate(pattern);
+    } catch (e) {}
+  }
+
+  // 时间到的重复提醒：只响一次很容易被忽略，尤其是戴着耳机或正在讲话时
+  var alertTick = null;
+  var alerting = false;
+
+  function startAlert() {
+    if (state.muted) return;
+    stopAlert();
+    try {
+      if (!navigator.vibrate) return;
+      alerting = true;
+      navigator.vibrate([80, 90, 80]);
+      alertTick = setInterval(function () {
+        try { navigator.vibrate([80, 90, 80]); } catch (e) {}
+      }, 2500);
+    } catch (e) { alerting = false; }
+  }
+
+  function stopAlert() {
+    alerting = false;
+    if (alertTick !== null) { clearInterval(alertTick); alertTick = null; }
+    try { if (navigator.vibrate) navigator.vibrate(0); } catch (e) {}
+  }
+
+  function toneLand() { tone([660, 880], 0.24); buzz(35); }
+  function toneStart() { tone([520, 780], 0.26); buzz(25); }
+  function toneDone() { tone([880, 660, 440], 0.6); }
+
+  /* ============================================================
+     状态
+     ============================================================ */
+
+  function paletteExists(id) {
+    return PALETTES.some(function (p) { return p.id === id; });
+  }
+
+  var state = {
+    mode: load("mode", "off-the-cuff"),
+    niche: load("niche", NICHES[0].id),
+    theme: document.documentElement.dataset.theme === "light" ? "light" : "dark",
+    palette: load("palette", DEFAULT_PALETTE),
+    speechSeconds: clamp(Number(load("speech", 60)) || 60, 30, 900),
+    researchSeconds: clamp(Number(load("research", 600)) || 600, 60, 3600),
+    muted: loadBool("muted", false),
+    topic: null,
+    spinning: false,
+    phase: "idle",
+    remaining: 60,
+    elapsed: 0
+  };
+  if (!paletteExists(state.palette)) state.palette = DEFAULT_PALETTE;
+
+  function nicheById(id) {
+    if (id === RESEARCH.id) return RESEARCH;
+    for (var i = 0; i < NICHES.length; i++) if (NICHES[i].id === id) return NICHES[i];
+    return NICHES[0];
+  }
+  function modeById(id) {
+    for (var i = 0; i < MODES.length; i++) if (MODES[i].id === id) return MODES[i];
+    return MODES[0];
+  }
+  function activeTopics() {
+    return state.mode === "deep-research" ? RESEARCH.topics : nicheById(state.niche).topics;
+  }
+  function activeNiche() {
+    return state.mode === "deep-research" ? RESEARCH : nicheById(state.niche);
+  }
+
+  /* ============================================================
+     DOM 引用
+     ============================================================ */
+
+  var el = {
+    stage: $("stage"),
+    modeThumb: $("modeThumb"),
+    modeBlurb: $("modeBlurb"),
+    modeOptions: Array.prototype.slice.call(document.querySelectorAll(".mode-option")),
+    niche: $("niche"),
+    nicheTrigger: $("nicheTrigger"),
+    nicheEmoji: $("nicheEmoji"),
+    nicheLabel: $("nicheLabel"),
+    nicheCount: $("nicheCount"),
+    nicheMenu: $("nicheMenu"),
+    reel: $("reel"),
+    reelEyebrow: $("reelEyebrow"),
+    reelPhrase: $("reelPhrase"),
+    spinBtn: $("spinBtn"),
+    startBtn: $("startBtn"),
+    settingsBtn: $("settingsBtn")
+  };
+
+  var spinTick = null;
+  var spinGuard = null;
+  var tickId = null;
+  var lastIndex = 0;
+  var overlay = null;
+
+  var SPIN_MS = Number(window.__SPEAK60_SPIN_MS) || 4600;
+
+  /* ============================================================
+     渲染
+     ============================================================ */
+
+  function isBusy() { return state.spinning || state.phase !== "idle"; }
+
+  el.settingsBtn.innerHTML = I.gear + "<span>设置</span>";
+  el.nicheEmoji.innerHTML = I.spark;
+  document.querySelector(".niche-caret").innerHTML = I.caret;
+
+  function renderModeSwitch() {
+    var idx = 0;
+    el.modeOptions.forEach(function (btn, i) {
+      var on = btn.dataset.mode === state.mode;
+      if (on) idx = i;
+      btn.classList.toggle("is-active", on);
+      btn.setAttribute("aria-checked", on ? "true" : "false");
+      btn.tabIndex = on ? 0 : -1;
+      btn.disabled = isBusy();
+    });
+    el.modeThumb.style.setProperty("--i", idx);
+    el.modeBlurb.textContent = modeById(state.mode).blurb;
+  }
+
+  function renderNiche() {
+    var n = activeNiche();
+    el.nicheEmoji.innerHTML = n.icon || I.spark;
+    el.nicheLabel.textContent = n.label;
+    el.nicheCount.textContent = n.topics.length + " 题";
+    el.niche.hidden = state.mode === "deep-research";
+    el.nicheTrigger.disabled = isBusy();
+  }
+
+  function renderReel() {
+    el.reel.classList.toggle("is-spinning", state.spinning);
+    el.reel.classList.toggle("is-landed", !state.spinning && !!state.topic);
+    if (state.spinning) el.reelEyebrow.textContent = "抽题中…";
+    else if (state.topic) el.reelEyebrow.textContent = "你的题目";
+    else el.reelEyebrow.textContent = "准备就绪";
+  }
+
+  function renderButtons() {
+    var busy = isBusy();
+    el.spinBtn.disabled = busy;
+    el.spinBtn.innerHTML = I.spin +
+      "<span>" + (state.spinning ? "抽题中…" : (state.topic ? "换一个" : "抽一个题")) + "</span>";
+    el.startBtn.disabled = busy || !state.topic;
+    el.startBtn.textContent = state.mode === "deep-research"
+      ? "开始 " + fmtText(state.researchSeconds) + " 研究"
+      : "开始 " + fmtText(state.speechSeconds) + " 计时";
+    el.settingsBtn.disabled = busy;
+  }
+
+  function renderAll() {
+    renderModeSwitch();
+    renderNiche();
+    renderReel();
+    renderButtons();
+  }
+
+  /* ============================================================
+     领域下拉
+     ============================================================ */
+
+  function buildMenu() {
+    el.nicheMenu.innerHTML = "";
+    NICHES.forEach(function (n) {
+      var row = document.createElement("div");
+      row.className = "niche-option" + (n.id === state.niche ? " is-active" : "");
+      row.setAttribute("role", "option");
+      row.setAttribute("aria-selected", n.id === state.niche ? "true" : "false");
+      row.tabIndex = -1;
+      row.dataset.id = n.id;
+      row.innerHTML = '<span class="niche-emoji" aria-hidden="true">' + (n.icon || I.spark) +
+        "</span><span>" + n.label +
+        '</span><span class="niche-count">' + n.topics.length + "</span>";
+      row.addEventListener("click", function () { chooseNiche(n.id); });
+      el.nicheMenu.appendChild(row);
+    });
+  }
+
+  function openMenu() {
+    if (isBusy()) return;
+    buildMenu();
+    el.nicheMenu.hidden = false;
+    el.niche.classList.add("is-open");
+    el.nicheTrigger.setAttribute("aria-expanded", "true");
+    var first = el.nicheMenu.querySelector(".niche-option.is-active") ||
+      el.nicheMenu.querySelector(".niche-option");
+    if (first) first.focus();
+  }
+
+  function closeMenu(focusTrigger) {
+    el.nicheMenu.hidden = true;
+    el.niche.classList.remove("is-open");
+    el.nicheTrigger.setAttribute("aria-expanded", "false");
+    if (focusTrigger) el.nicheTrigger.focus();
+  }
+
+  function chooseNiche(id) {
+    state.niche = id;
+    save("niche", id);
+    closeMenu(true);
+    lastIndex = 0;
+    setTopic(pick(activeTopics()));
+    renderAll();
+  }
+
+  el.nicheTrigger.addEventListener("click", function () {
+    if (el.nicheMenu.hidden) openMenu(); else closeMenu(true);
+  });
+  el.nicheTrigger.addEventListener("keydown", function (e) {
+    if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+      e.preventDefault();
+      if (el.nicheMenu.hidden) openMenu();
+    }
+  });
+  el.nicheMenu.addEventListener("keydown", function (e) {
+    var rows = Array.prototype.slice.call(el.nicheMenu.querySelectorAll(".niche-option"));
+    var at = rows.indexOf(document.activeElement);
+    if (e.key === "ArrowDown") { e.preventDefault(); rows[Math.min(rows.length - 1, at + 1)].focus(); }
+    else if (e.key === "ArrowUp") { e.preventDefault(); rows[Math.max(0, at - 1)].focus(); }
+    else if (e.key === "Home") { e.preventDefault(); rows[0].focus(); }
+    else if (e.key === "End") { e.preventDefault(); rows[rows.length - 1].focus(); }
+    else if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      if (rows[at]) chooseNiche(rows[at].dataset.id);
+    } else if (e.key === "Escape") { e.preventDefault(); closeMenu(true); }
+    else if (e.key === "Tab") { closeMenu(false); }
+  });
+  document.addEventListener("mousedown", function (e) {
+    if (!el.niche.hidden && !el.niche.contains(e.target)) closeMenu(false);
+  });
+
+  /* ============================================================
+     模式切换
+     ============================================================ */
+
+  el.modeOptions.forEach(function (btn) {
+    btn.addEventListener("click", function () { setMode(btn.dataset.mode); });
+    btn.addEventListener("keydown", function (e) {
+      if (e.key === "ArrowRight" || e.key === "ArrowDown") {
+        e.preventDefault();
+        setMode(MODES[(el.modeOptions.indexOf(btn) + 1) % MODES.length].id, true);
+      } else if (e.key === "ArrowLeft" || e.key === "ArrowUp") {
+        e.preventDefault();
+        var j = el.modeOptions.indexOf(btn);
+        setMode(MODES[(j - 1 + MODES.length) % MODES.length].id, true);
+      }
+    });
+  });
+
+  function setMode(id, focus) {
+    if (isBusy() || id === state.mode) return;
+    state.mode = id;
+    save("mode", id);
+    lastIndex = 0;
+    setTopic(pick(activeTopics()));
+    renderAll();
+    if (focus) {
+      el.modeOptions.forEach(function (b) { if (b.dataset.mode === id) b.focus(); });
+    }
+  }
+
+  function setTopic(topic) {
+    state.topic = topic == null ? topic : String(topic);
+    el.reelPhrase.textContent = topic;
+  }
+
+  /* ============================================================
+     抽题转盘
+     ============================================================ */
+
+  function clearSpin() {
+    if (spinTick !== null) { clearInterval(spinTick); spinTick = null; }
+    if (spinGuard !== null) { clearTimeout(spinGuard); spinGuard = null; }
+  }
+
+  function spin() {
+    if (isBusy()) return;
+    clearSpin();
+    state.spinning = true;
+    state.topic = null;
+    renderAll();
+
+    var topics = activeTopics();
+    var total = topics.length;
+    var from = lastIndex % total;
+    var plan = planSpin(from, total);
+    var started = performance.now();
+    var shown = -1;
+    var settled = false;
+
+    function finish() {
+      if (settled) return;
+      settled = true;
+      clearSpin();
+      lastIndex = plan.landIndex;
+      state.spinning = false;
+      setTopic(topics[plan.landIndex]);
+      renderAll();
+      toneLand();
+    }
+
+    // 用 setInterval + performance.now() 驱动，而不是 requestAnimationFrame：
+    // 页面在后台标签页 / 息屏时 rAF 会停止回调，转盘就会卡住转不完。
+    function frame() {
+      if (settled) return;
+      var t = Math.min(1, (performance.now() - started) / SPIN_MS);
+      var step = Math.min(plan.steps, Math.floor(easeOutCubic(t) * plan.steps));
+      if (step !== shown) {
+        shown = step;
+        var idx = (from + step) % total;
+        lastIndex = idx;
+        el.reelPhrase.textContent = topics[idx];
+      }
+      if (t >= 1) finish();
+    }
+
+    spinTick = setInterval(frame, 16);
+    frame();
+    spinGuard = setTimeout(finish, SPIN_MS + 400);
+  }
+
+  el.spinBtn.addEventListener("click", function () { unlockAudio(); spin(); });
+
+  /* ============================================================
+     计时器
+     ============================================================ */
+
+  function stopTick() {
+    if (tickId !== null) { clearInterval(tickId); tickId = null; }
+  }
+
+  function countdown(seconds, onTick, onEnd) {
+    stopTick();
+    var endAt = Date.now() + seconds * 1000;
+    tickId = setInterval(function () {
+      var left = Math.max(0, Math.ceil((endAt - Date.now()) / 1000));
+      onTick(left);
+      if (left <= 0) { stopTick(); onEnd(); }
+    }, 100);
+    onTick(seconds);
+  }
+
+  function startSession() {
+    if (!state.topic || isBusy()) return;
+    closeMenu(false);
+    if (state.mode === "deep-research") beginResearch();
+    else beginSpeech();
+  }
+
+  el.startBtn.addEventListener("click", function () { unlockAudio(); startSession(); });
+
+  /* ============================================================
+     全屏计时遮罩
+     ============================================================ */
+
+  var RING_R = 84;
+  var RING_C = 2 * Math.PI * RING_R;
+
+  function buildOverlay(opts) {
+    destroyOverlay();
+    var wrap = document.createElement("div");
+    wrap.className = "timer";
+    wrap.setAttribute("role", "dialog");
+    wrap.setAttribute("aria-modal", "true");
+
+    var cueHtml = "";
+    if (opts.cues) {
+      cueHtml = '<div class="cues">' + CUES.map(function (c, i) {
+        return '<span class="cue" data-cue="' + i + '">' + c + "</span>";
+      }).join("") + "</div>";
+    }
+
+    wrap.innerHTML =
+      '<p class="timer-label">' + opts.label + "</p>" +
+      '<p class="timer-topic">' + escapeHtml(state.topic || "") + "</p>" +
+      '<div class="timeup" id="timeup">' +
+        '<p class="timeup-title" id="timeupTitle">时间到</p>' +
+        '<p class="timeup-sub" id="timeupSub"></p>' +
+      "</div>" +
+      '<div class="ring-wrap">' +
+        '<svg class="ring" viewBox="0 0 200 200" aria-hidden="true">' +
+          '<circle class="track" cx="100" cy="100" r="' + RING_R + '"></circle>' +
+          '<circle class="bar" cx="100" cy="100" r="' + RING_R + '" ' +
+            'stroke-dasharray="' + RING_C.toFixed(2) + '" stroke-dashoffset="0"></circle>' +
+        "</svg>" +
+        '<p class="ring-time" id="ringTime">' + fmtClock(opts.seconds) + "</p>" +
+      "</div>" +
+      cueHtml +
+      '<div class="timer-actions" id="timerActions"></div>' +
+      '<p class="timer-note" id="timerNote"></p>';
+
+    document.body.appendChild(wrap);
+    overlay = {
+      root: wrap,
+      ring: wrap.querySelector(".bar"),
+      ringWrap: wrap.querySelector(".ring-wrap"),
+      time: wrap.querySelector("#ringTime"),
+      actions: wrap.querySelector("#timerActions"),
+      note: wrap.querySelector("#timerNote"),
+      cues: Array.prototype.slice.call(wrap.querySelectorAll(".cue")),
+      total: opts.seconds
+    };
+    return overlay;
+  }
+
+  // 时间到：整屏切到「结束」状态（闪烁 + 横幅），比只换一行小字明确得多
+  function setDone(title, sub) {
+    if (!overlay) return;
+    var t = overlay.root.querySelector("#timeupTitle");
+    var sb = overlay.root.querySelector("#timeupSub");
+    if (t) t.textContent = title;
+    if (sb) sb.textContent = sub || "";
+    overlay.root.classList.add("is-done");
+    // 同步给读屏软件
+    overlay.root.setAttribute("aria-label", title);
+    overlay.root.setAttribute("aria-live", "assertive");
+  }
+
+  // 加时 / 重开：退回进行中状态
+  function setLive() {
+    if (!overlay) return;
+    overlay.root.classList.remove("is-done");
+    overlay.root.setAttribute("aria-live", "off");
+  }
+
+  function destroyOverlay() {
+    stopAlert();
+    if (overlay && overlay.root && overlay.root.parentNode) {
+      overlay.root.parentNode.removeChild(overlay.root);
+    }
+    overlay = null;
+  }
+
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+    });
+  }
+
+  function paintTimer(remaining) {
+    if (!overlay) return;
+    var ratio = overlay.total > 0 ? clamp(remaining / overlay.total, 0, 1) : 0;
+    overlay.ring.setAttribute("stroke-dashoffset", (RING_C * (1 - ratio)).toFixed(2));
+    overlay.time.textContent = fmtClock(remaining);
+    var critical = remaining <= 10;
+    var warning = !critical && remaining <= 20;
+    overlay.ringWrap.classList.toggle("is-warning", warning);
+    overlay.ringWrap.classList.toggle("is-critical", critical);
+    overlay.time.classList.toggle("is-critical", critical);
+    state.remaining = remaining;
+    state.elapsed = overlay.total - remaining;
+    updateCues();
+  }
+
+  function updateCues() {
+    if (!overlay || !overlay.cues.length) return;
+    var total = overlay.total;
+    var used = total - state.remaining;
+    var active;
+    if (total <= 0) active = 0;
+    else {
+      var third = total / 3;
+      active = used >= third * 2 ? 2 : used >= third ? 1 : 0;
+    }
+    overlay.cues.forEach(function (c, i) { c.classList.toggle("is-active", i === active); });
+  }
+
+  function setActions(html) { if (overlay) overlay.actions.innerHTML = html; }
+  function setNote(text) { if (overlay) overlay.note.textContent = text || ""; }
+
+  /* ---------- 先查再讲：研究倒计时 ---------- */
+
+  function beginResearch() {
+    state.phase = "research";
+    renderAll();
+    buildOverlay({ label: "研究时间", seconds: state.researchSeconds, cues: false });
+    overlay.root.setAttribute("aria-label", "研究倒计时");
+
+    var extra = 0;
+
+    function actionsHtml() {
+      return '<button type="button" class="btn primary" id="ovReady">研究完了，开始讲</button>' +
+        '<div class="row">' +
+        '<button type="button" class="btn secondary" id="ovMore">再加 5 分钟</button>' +
+        '<button type="button" class="btn ghost" id="ovQuit">退出</button>' +
+        "</div>";
+    }
+
+    function wire() {
+      setActions(actionsHtml());
+      var ready = overlay.root.querySelector("#ovReady");
+      var more = overlay.root.querySelector("#ovMore");
+      var quit = overlay.root.querySelector("#ovQuit");
+      if (ready) ready.addEventListener("click", function () { stopTick(); beginSpeech(true); });
+      if (more) more.addEventListener("click", function () { addTime(300); });
+      if (quit) quit.addEventListener("click", function () { stopTick(); endSession(); });
+      if (ready) ready.focus();
+    }
+
+    function addTime(sec) {
+      extra += sec;
+      stopAlert();   // 先停报警，再延长
+      setLive();
+      overlay.total = state.remaining + sec;
+      countdown(state.remaining + sec, paintTimer, onResearchDone);
+      setNote("已延长到 " + fmtText(overlay.total) + "，随时可以点「研究完了」。");
+      wire();
+    }
+
+    function onResearchDone() {
+      toneDone();
+      startAlert();
+      setDone("研究时间到", "查了 " + fmtText(overlay.total) + " · 想继续就再加 5 分钟，或直接开口");
+      setNote("研究时间到。再加时间继续查，或者直接点「研究完了，开始讲」。");
+      wire();
+    }
+
+    setNote("研究结束后点按钮开始讲，题目会一直留在屏幕上。");
+    wire();
+    countdown(state.researchSeconds, paintTimer, onResearchDone);
+
+    overlay.root.addEventListener("keydown", function (e) {
+      if (e.key === "Escape") { e.preventDefault(); stopTick(); endSession(); }
+    });
+  }
+
+  /* ---------- 演讲计时 ---------- */
+
+  function beginSpeech(fromResearchReady) {
+    state.phase = "speech";
+    renderAll();
+    buildOverlay({
+      label: fromResearchReady ? "准备好了，开始讲" : "演讲时间",
+      seconds: state.speechSeconds,
+      cues: true
+    });
+    overlay.root.setAttribute("aria-label", "演讲计时");
+    toneStart();
+
+    var over = 0;
+
+    function wire(ended) {
+      setActions(
+        '<button type="button" class="btn ' + (ended ? "primary" : "secondary") + '" id="ovStop">' +
+          (ended ? "讲完了" : "提前结束") + "</button>" +
+        '<button type="button" class="btn ' + (ended ? "secondary" : "ghost") + '" id="ovExtend">' +
+          (ended ? "再讲 30 秒" : "加 30 秒") + "</button>"
+      );
+      overlay.root.querySelector("#ovStop").addEventListener("click", function () {
+        stopTick(); endSession();
+      });
+      overlay.root.querySelector("#ovExtend").addEventListener("click", function () {
+        over += 30;
+        // 顺序很重要：先停掉重复报警，再发提示音，
+        // 否则提示音的短振动会混进报警节奏里，看起来像「停了还在响」
+        stopAlert();
+        setLive();
+        setNote("");
+        toneStart();
+        // 已归零时重新给 30 秒，否则在原倒计时上顺延
+        countdown(ended ? 30 : state.remaining + 30, paintTimer, onSpeechDone);
+        wire(false);
+      });
+      var stop = overlay.root.querySelector("#ovStop");
+      if (stop) stop.focus();
+    }
+
+    function onSpeechDone() {
+      toneDone();
+      startAlert();
+      // 算真实讲了多少：原始时长 + 加时（如果时间到之后又重开，则从重开点累加）
+      overlay.total = state.speechSeconds + over;
+      setDone("时间到", "这轮一共 " + fmtText(overlay.total) +
+        (over > 0 ? "（含加时）" : "") + " · 讲完了就点下面");
+      wire(true);
+    }
+
+    wire(false);
+    countdown(state.speechSeconds, paintTimer, onSpeechDone);
+
+    overlay.root.addEventListener("keydown", function (e) {
+      if (e.key === "Escape") { e.preventDefault(); stopTick(); endSession(); }
+    });
+  }
+
+  function endSession() {
+    stopTick();
+    destroyOverlay();
+    state.phase = "idle";
+    state.remaining = state.speechSeconds;
+    state.elapsed = 0;
+    renderAll();
+  }
+
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Escape" && state.phase !== "idle") {
+      e.preventDefault();
+      endSession();
+      return;
+    }
+    if (state.phase !== "idle") return;
+    if (e.target && /^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)) return;
+
+    if (e.code === "Space") {
+      if (e.target && e.target.tagName === "BUTTON") return;
+      e.preventDefault();
+      spin();
+    } else if (e.key === "Enter") {
+      if (e.target && e.target.tagName === "BUTTON") return;
+      if (state.topic && !isBusy()) { e.preventDefault(); startSession(); }
+    }
+  });
+
+  /* ============================================================
+     设置
+     ============================================================ */
+
+  el.settingsBtn.addEventListener("click", openSettings);
+
+  function openSettings() {
+    if (isBusy()) return;
+    var wrap = document.createElement("div");
+    wrap.className = "overlay";
+    wrap.setAttribute("role", "presentation");
+
+    var speechMin = Math.round(state.speechSeconds / 60);
+    var researchMin = Math.round(state.researchSeconds / 60);
+
+    var swatchHtml = PALETTES.map(function (p) {
+      var on = p.id === state.palette;
+      return '<button type="button" class="swatch' + (on ? " is-on" : "") + '"' +
+        ' data-palette="' + p.id + '" style="--sw:' + p.swatch + '"' +
+        ' aria-pressed="' + (on ? "true" : "false") + '" title="' + p.name + '">' +
+        "<i></i><span class=\"swatch-name\">" + p.name + "</span></button>";
+    }).join("");
+
+    wrap.innerHTML =
+      '<div class="panel" role="dialog" aria-modal="true" aria-labelledby="setTitle">' +
+        '<div class="panel-head"><h2 id="setTitle">设置</h2>' +
+        "<p>外观和时长都会自动记住。</p></div>" +
+
+        '<div class="field">' +
+          '<span class="field-label" id="themeLabel">深浅</span>' +
+          '<div class="theme-seg" role="group" aria-labelledby="themeLabel">' +
+            '<button type="button" data-theme="dark"' +
+              (state.theme === "dark" ? ' class="is-on"' : "") + ">" +
+              I.moon + "<span>深色</span></button>" +
+            '<button type="button" data-theme="light"' +
+              (state.theme === "light" ? ' class="is-on"' : "") + ">" +
+              I.sun + "<span>浅色</span></button>" +
+          "</div>" +
+        "</div>" +
+
+        '<div class="field">' +
+          '<span class="field-label" id="paletteLabel">配色</span>' +
+          '<div class="swatches" role="group" aria-labelledby="paletteLabel">' + swatchHtml + "</div>" +
+          '<p class="field-hint">浅色模式下强调色会自动换成更深的同色系，否则按钮上的字会读不清。</p>' +
+        "</div>" +
+
+        '<div class="duration-field">' +
+          '<div class="duration-head"><label class="duration-label" for="setSpeech">演讲时长</label>' +
+          '<span class="duration-value" id="speechVal">' + fmtText(state.speechSeconds) + "</span></div>" +
+          '<input class="duration-slider" id="setSpeech" type="range" min="1" max="10" step="1" value="' + speechMin + '">' +
+          '<div class="duration-ends" aria-hidden="true"><span>1 分</span><span>10 分</span></div>' +
+        "</div>" +
+
+        '<div class="duration-field">' +
+          '<div class="duration-head"><label class="duration-label" for="setResearch">研究时长</label>' +
+          '<span class="duration-value" id="researchVal">' + fmtText(state.researchSeconds) + "</span></div>" +
+          '<input class="duration-slider" id="setResearch" type="range" min="1" max="30" step="1" value="' + researchMin + '">' +
+          '<div class="duration-ends" aria-hidden="true"><span>1 分</span><span>30 分</span></div>' +
+          '<p class="duration-hint">只在「先查再讲」模式用得上。研究中途还能再加时间。</p>' +
+        "</div>" +
+
+        '<label class="check-row"><input type="checkbox" id="setMuted"' + (state.muted ? " checked" : "") + ">" +
+          "<span>静音提示音</span></label>" +
+
+        '<p class="panel-note">全部存在浏览器本地，不上传任何东西。</p>' +
+        '<button type="button" class="btn primary" id="setDone" style="width:100%;margin-top:20px">完成</button>' +
+      "</div>";
+
+    document.body.appendChild(wrap);
+
+    var speechInput = wrap.querySelector("#setSpeech");
+    var researchInput = wrap.querySelector("#setResearch");
+    var mutedInput = wrap.querySelector("#setMuted");
+    var panel = wrap.querySelector(".panel");
+
+    function paintFill(input) {
+      var min = Number(input.min) || 0;
+      var max = Number(input.max) || 100;
+      var v = Number(input.value);
+      var pct = max > min ? ((v - min) / (max - min)) * 100 : 0;
+      input.style.setProperty("--pct", pct.toFixed(2) + "%");
+    }
+    paintFill(speechInput);
+    paintFill(researchInput);
+
+    Array.prototype.forEach.call(wrap.querySelectorAll(".theme-seg button"), function (btn) {
+      btn.addEventListener("click", function () {
+        state.theme = btn.dataset.theme;
+        save("theme", state.theme);
+        applyAppearance();
+        Array.prototype.forEach.call(wrap.querySelectorAll(".theme-seg button"), function (b) {
+          b.classList.toggle("is-on", b === btn);
+        });
+      });
+    });
+
+    Array.prototype.forEach.call(wrap.querySelectorAll(".swatch"), function (btn) {
+      btn.addEventListener("click", function () {
+        state.palette = btn.dataset.palette;
+        save("palette", state.palette);
+        applyAppearance();
+        Array.prototype.forEach.call(wrap.querySelectorAll(".swatch"), function (b) {
+          var on = b === btn;
+          b.classList.toggle("is-on", on);
+          b.setAttribute("aria-pressed", on ? "true" : "false");
+        });
+      });
+      btn.addEventListener("keydown", function (e) {
+        var all = Array.prototype.slice.call(wrap.querySelectorAll(".swatch"));
+        var at = all.indexOf(btn);
+        if (e.key === "ArrowRight" || e.key === "ArrowDown") {
+          e.preventDefault(); all[(at + 1) % all.length].focus();
+        } else if (e.key === "ArrowLeft" || e.key === "ArrowUp") {
+          e.preventDefault(); all[(at - 1 + all.length) % all.length].focus();
+        }
+      });
+    });
+
+    speechInput.addEventListener("input", function () {
+      state.speechSeconds = Number(speechInput.value) * 60;
+      wrap.querySelector("#speechVal").textContent = fmtText(state.speechSeconds);
+      save("speech", state.speechSeconds);
+      paintFill(speechInput);
+      renderButtons();
+    });
+
+    researchInput.addEventListener("input", function () {
+      state.researchSeconds = Number(researchInput.value) * 60;
+      wrap.querySelector("#researchVal").textContent = fmtText(state.researchSeconds);
+      save("research", state.researchSeconds);
+      paintFill(researchInput);
+      renderButtons();
+    });
+
+    mutedInput.addEventListener("change", function () {
+      state.muted = mutedInput.checked;
+      save("muted", state.muted);
+    });
+
+    function shutdown() {
+      document.removeEventListener("keydown", onKey);
+      if (wrap.parentNode) wrap.parentNode.removeChild(wrap);
+      el.settingsBtn.focus();
+    }
+
+    function onKey(e) {
+      if (e.key === "Escape") { e.preventDefault(); shutdown(); }
+      else if (e.key === "Tab") {
+        var f = Array.prototype.slice.call(panel.querySelectorAll("button, input, [tabindex]"))
+          .filter(function (n) { return !n.disabled; });
+        if (!f.length) return;
+        var first = f[0], last = f[f.length - 1];
+        if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+        else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+      }
+    }
+
+    wrap.querySelector("#setDone").addEventListener("click", shutdown);
+    wrap.addEventListener("mousedown", function (e) {
+      if (e.target === wrap) shutdown();
+    });
+    document.addEventListener("keydown", onKey);
+    speechInput.focus();
+  }
+
+  /* ============================================================
+     启动
+     ============================================================ */
+
+  if (state.mode !== "off-the-cuff" && state.mode !== "deep-research") state.mode = "off-the-cuff";
+  if (!NICHES.some(function (n) { return n.id === state.niche; })) state.niche = NICHES[0].id;
+
+  applyAppearance();
+
+  var initial = pick(activeTopics());
+  lastIndex = activeTopics().indexOf(initial);
+  setTopic(initial);
+  state.topic = null;
+  el.reelPhrase.textContent = "点击抽题";
+  renderAll();
+
+  window.addEventListener("pagehide", clearSpin);
+})();
+</script>
+</body>
+</html>

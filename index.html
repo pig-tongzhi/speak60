@@ -661,6 +661,100 @@
   }
   .field-hint { font-size: 11.5px; line-height: 1.6; color: var(--text-3); margin-top: 10px; }
 
+  /* ---------- 分类选择 ---------- */
+  .field-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 10px;
+  }
+  .field-head .field-label { margin-bottom: 0; }
+  .link-btn {
+    padding: 4px 2px;
+    min-height: 28px;
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--c);
+    background: none;
+    border: 0;
+    cursor: pointer;
+    border-radius: 6px;
+  }
+  .link-btn:hover { text-decoration: underline; }
+
+  .pick-list {
+    border: 1px solid var(--line-1);
+    border-radius: var(--r-md);
+    overflow: hidden;
+  }
+  .pick-item {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    width: 100%;
+    padding: 9px 12px;
+    min-height: 46px;
+    font-family: inherit;
+    font-size: 13.5px;
+    color: var(--text-3);
+    text-align: left;
+    background: none;
+    border: 0;
+    border-top: 1px solid var(--line-1);
+    cursor: pointer;
+    transition: background 0.18s, color 0.18s;
+  }
+  .pick-item:first-child { border-top: 0; }
+  .pick-item:hover { background: var(--hover-bg); }
+  .pick-item .pick-icon {
+    display: grid;
+    place-items: center;
+    width: 18px; height: 18px;
+    flex: 0 0 auto;
+    color: var(--text-4);
+    transition: color 0.18s;
+  }
+  .pick-item .pick-icon svg { width: 16px; height: 16px; }
+  .pick-item.is-on .pick-icon { color: var(--c); }
+  .pick-item .pick-name { flex: 1; }
+  .pick-item .pick-num {
+    font-size: 11.5px;
+    color: var(--text-4);
+    font-variant-numeric: tabular-nums;
+  }
+  /* 自绘勾选框：iOS 上原生 checkbox 不可靠，顺便统一视觉 */
+  .pick-box {
+    position: relative;
+    width: 19px; height: 19px;
+    flex: 0 0 auto;
+    border-radius: 6px;
+    border: 1.5px solid var(--line-2);
+    background: transparent;
+    transition: background 0.18s, border-color 0.18s;
+  }
+  .pick-box::after {
+    content: "";
+    position: absolute;
+    left: 6px; top: 2.5px;
+    width: 5px; height: 9px;
+    border: solid var(--c-on);
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg) scale(0);
+    transition: transform 0.18s var(--ease-spring);
+  }
+  .pick-item.is-on { color: var(--text); }
+  .pick-item.is-on .pick-box {
+    background: var(--c);
+    border-color: var(--c);
+  }
+  .pick-item.is-on .pick-box::after { transform: rotate(45deg) scale(1); }
+  .pick-item.is-on .pick-num { color: var(--c); }
+  .pick-item:focus-visible { outline: 2px solid var(--c); outline-offset: -2px; }
+  .pick-item:disabled { opacity: 0.45; cursor: not-allowed; }
+  .pick-item:disabled:hover { background: none; }
+
   /* ---------- 时长滑块 ---------- */
   .duration-field { margin-top: 24px; }
   .duration-head {
@@ -761,6 +855,15 @@
     color: var(--text);
   }
   .panel-note { font-size: 11.5px; line-height: 1.65; color: var(--text-3); margin-top: 14px; }
+
+  /* 「完成」吸底：设置项变多后（尤其加了分类选择），按钮不能再被推到视口外 */
+  .panel-foot {
+    position: sticky;
+    bottom: -26px;              /* 抵消面板 padding，让底色一直铺到面板边缘 */
+    margin: 20px -26px -26px;
+    padding: 12px 26px 26px;
+    background: linear-gradient(180deg, transparent, var(--bg-elev-2) 22%);
+  }
 
   /* ---------- 全屏计时器 ---------- */
   .timer {
@@ -977,6 +1080,11 @@
     .kbd-hint { display: none; }
     .footer-row { justify-content: flex-end; }
     .panel { padding: 22px 20px; }
+    .panel-foot {
+      bottom: -22px;
+      margin: 18px -20px -22px;
+      padding: 12px 20px 22px;
+    }
   }
   @media (prefers-reduced-motion: reduce) {
     *, *::after, *::before {
@@ -1132,101 +1240,182 @@
     label: "深度研究",
     icon: I.search,
     topics: [
-      "富兰克林效应", "透明度错觉", "情感预测偏差", "聚焦效应", "历史终结错觉",
-      "讽刺性反弹", "情绪标注", "谢林点", "针锋相对为何让好人赢", "消耗战",
-      "昂贵的信号", "志愿者困境", "猎鹿博弈", "鸵鸟效应", "赌场资金效应",
-      "折中效应", "面额效应", "检察官谬误", "辛普森悖论", "伯克森悖论",
-      "小数定律", "假阳性悖论", "林迪效应", "邓宁-克鲁格效应", "锚定效应",
-      "损失厌恶", "沉没成本谬误", "基本归因错误", "确认偏误", "幸存者偏差",
-      "第二序思维", "古德哈特定律", "坎贝尔定律", "路径依赖", "局部最优陷阱",
-      "反脆弱", "遍历性", "规模效应", "网络效应的临界点", "复利的数学本质"
-    ]
+        "富兰克林效应", "透明度错觉", "情感预测偏差", "聚焦效应",
+        "历史终结错觉", "讽刺性反弹", "情绪标注", "谢林点",
+        "针锋相对为何让好人赢", "消耗战", "昂贵的信号", "志愿者困境",
+        "猎鹿博弈", "鸵鸟效应", "赌场资金效应", "折中效应",
+        "面额效应", "检察官谬误", "辛普森悖论", "伯克森悖论",
+        "小数定律", "假阳性悖论", "林迪效应", "邓宁-克鲁格效应",
+        "锚定效应", "损失厌恶", "沉没成本谬误", "基本归因错误",
+        "确认偏误", "幸存者偏差", "第二序思维", "古德哈特定律",
+        "坎贝尔定律", "路径依赖", "局部最优陷阱", "反脆弱",
+        "遍历性", "规模效应", "网络效应的临界点", "复利的数学本质",
+        "承诺升级", "双曲贴现", "社会惰化", "旁观者效应",
+        "群体思维", "群体极化", "回音室效应", "逆火效应",
+        "刻板印象威胁", "自我设限", "自我妨碍", "习得性无助",
+        "控制错觉", "计划谬误", "后见之明偏误", "自我服务偏误",
+        "行动者-观察者偏差", "公正世界假设", "沉没成本与情感承诺", "稀缺心态如何影响决策",
+        "时间贴现", "前景理论", "风险寻求与风险规避", "禀赋效应的日常形态",
+        "峰终定律", "曝光效应", "单纯接触效应", "框架效应",
+        "损失厌恶的边界", "零和与正和", "囚徒困境的重复博弈", "最后通牒博弈",
+        "独裁者博弈", "公共池资源", "协调博弈", "信号传递",
+        "逆向归纳", "混合策略", "最小最大策略", "以牙还牙的宽容版"
+      ]
   };
 
   var NICHES = [
     {
       id: "daily", label: "日常杂谈", icon: I.spark,
       topics: [
-        "通勤路上", "群聊", "自动纠错", "门铃", "副驾驶", "旧手机", "外卖迟到",
-        "Wi-Fi 密码", "排队", "快递柜", "丢伞", "闹钟", "买菜", "理发", "洗衣服",
-        "搬东西", "菜市场砍价", "电梯里的沉默", "第一次做饭", "被叫错名字",
-        "空调温度之争", "邻居的声音", "取快递时遇到熟人", "地铁让座", "剩菜",
-        "超市自助结账", "行李箱轮子", "手机电量 1%", "共享单车", "小区门禁",
-        "洗好的碗放哪", "室友的冰箱", "凌晨三点的便利店", "剪头发时说话",
-        "旅行装箱", "重复的梦", "天气预报不准", "打折陷阱", "停车场找车位",
-        "备忘录里最久的一条"
+        "通勤路上", "群聊", "自动纠错", "门铃",
+        "副驾驶", "旧手机", "外卖迟到", "Wi-Fi 密码",
+        "排队", "快递柜", "丢伞", "闹钟",
+        "买菜", "理发", "洗衣服", "搬东西",
+        "菜市场砍价", "电梯里的沉默", "第一次做饭", "被叫错名字",
+        "空调温度之争", "邻居的声音", "取快递时遇到熟人", "地铁让座",
+        "剩菜", "超市自助结账", "行李箱轮子", "手机电量 1%",
+        "共享单车", "小区门禁", "洗好的碗放哪", "室友的冰箱",
+        "凌晨三点的便利店", "剪头发时说话", "旅行装箱", "重复的梦",
+        "天气预报不准", "打折陷阱", "停车场找车位", "备忘录里最久的一条",
+        "取快递", "旧照片", "群聊里的链接", "外卖好评返现",
+        "牙膏快挤完了", "换季感冒", "地铁上的广播", "手机壳",
+        "买菜送葱", "充电线", "被推销", "理发排队叫号",
+        "洗衣机结束的提示音", "共享充电宝", "早起第一件事", "杯子里的水垢",
+        "雨天没带伞", "袜子的配对", "电脑风扇声", "罐头盖子",
+        "遥控器的电池", "小区快递代收点", "外卖备注", "打车拼车",
+        "朋友迟到", "被拉进新群", "手机相册的第一张", "空调外机的水滴声",
+        "晾衣服的天气", "自我介绍", "相亲饭局", "健身房的第一天",
+        "凌晨的饿", "陌生的口音", "便利店关东煮", "微信未读 99+",
+        "旧日记", "自行车掉链子", "打印店", "深夜的出租车"
       ]
     },
     {
       id: "mental-model", label: "思维模型", icon: I.grid,
       topics: [
-        "第一性原理", "奥卡姆剃刀", "帕累托法则", "逆向思维", "地图不是疆域",
-        "能力圈", "幸存者偏差", "熵增与秩序", "黑天鹅", "灰犀牛",
-        "反共识而正确", "第二序思维", "安全边际", "关注圈与影响圈", "复利"
+        "第一性原理", "奥卡姆剃刀", "帕累托法则", "逆向思维",
+        "地图不是疆域", "能力圈", "幸存者偏差", "熵增与秩序",
+        "黑天鹅", "灰犀牛", "反共识而正确", "第二序思维",
+        "安全边际", "关注圈与影响圈", "复利", "汉隆剃刀",
+        "切斯特顿栅栏", "林迪效应", "古德哈特定律", "帕金森琐碎定律",
+        "彼得原理", "路径依赖", "局部最优", "均值回归",
+        "复利的反面：复亏", "机会成本", "比较优势", "激励不相容",
+        "逆向选择", "道德风险", "公地悲剧", "搭便车",
+        "外部性", "信息不对称", "谈判中的 BATNA", "沉没成本的日常形态",
+        "确认偏误", "可得性启发", "代表性启发", "锚定效应",
+        "框架效应", "损失厌恶", "禀赋效应", "心理账户",
+        "双曲贴现", "承诺一致性", "社会认同", "权威偏误",
+        "稀缺心态", "邓宁-克鲁格效应"
       ]
     },
     {
       id: "ai-agent", label: "AI 与智能体", icon: I.robot,
       topics: [
-        "大模型幻觉", "上下文窗口", "提示词工程", "智能体工作流", "工具调用",
-        "检索增强生成（RAG）", "微调", "模型蒸馏", "推理成本", "算力与延迟",
-        "开源模型", "合成数据", "数据飞轮", "自动化偏见", "AI 味的文字",
-        "人机协作的边界", "记忆机制", "多智能体协作", "评测集", "对齐",
-        "AI 会不会取代初级岗位", "把 AI 当同事还是当工具", "幻觉与创造力的界限",
-        "上下文工程", "模型选型", "本地部署 vs 调用 API", "AI 产品的护城河",
-        "什么工作不该交给 AI"
+        "大模型幻觉", "上下文窗口", "提示词工程", "智能体工作流",
+        "工具调用", "检索增强生成（RAG）", "微调", "模型蒸馏",
+        "推理成本", "算力与延迟", "开源模型", "合成数据",
+        "数据飞轮", "自动化偏见", "AI 味的文字", "人机协作的边界",
+        "记忆机制", "多智能体协作", "评测集", "对齐",
+        "AI 会不会取代初级岗位", "把 AI 当同事还是当工具", "幻觉与创造力的界限", "上下文工程",
+        "模型选型", "本地部署 vs 调用 API", "AI 产品的护城河", "什么工作不该交给 AI",
+        "语音交互", "多模态输入", "长文档理解", "AI 写代码的边界",
+        "向量数据库", "分块与召回", "重排序", "Agent 的失败模式",
+        "自主性与可控性", "人工兜底", "数据隐私与本地推理", "模型更新带来的回归",
+        "AI 生成内容的标注", "知识截止", "多轮对话的状态管理", "意图识别",
+        "槽位填充", "函数调用的可靠性", "沙箱执行", "成本与效果的权衡",
+        "AI 招聘筛选的偏见", "AI 与教育", "为什么 AI 会自信地说错", "prompt 注入",
+        "越狱攻击", "内容审核", "AI 角色的边界", "自动化决策的责任"
       ]
     },
     {
       id: "solo", label: "一人公司与自由职业", icon: I.rocket,
       topics: [
-        "睡后收入", "接单与报价", "客户预期管理", "复购", "个人品牌",
-        "最小可行服务", "时间定价 vs 价值定价", "一人公司的天花板",
-        "现金流优先", "拒绝一个客户", "私域", "口碑传播", "定价心理学",
-        "远程协作", "给自己发工资", "把技能产品化", "订阅制", "雇佣第一个帮手",
-        "淡季怎么过", "合同与预付款", "被抄了怎么办", "一个人的品牌露出"
+        "睡后收入", "接单与报价", "客户预期管理", "复购",
+        "个人品牌", "最小可行服务", "时间定价 vs 价值定价", "一人公司的天花板",
+        "现金流优先", "拒绝一个客户", "私域", "口碑传播",
+        "定价心理学", "远程协作", "给自己发工资", "把技能产品化",
+        "订阅制", "雇佣第一个帮手", "淡季怎么过", "合同与预付款",
+        "被抄了怎么办", "一个人的品牌露出", "客户说再考虑一下", "同行报价更低",
+        "作品集维护", "精力是最稀缺资源", "给自己设边界", "外包与自研",
+        "涨价的时机", "退款政策", "客户越界", "长期客户的价值",
+        "介绍制的复购", "接单平台的选择", "远程会议的效率", "时间块管理",
+        "把流程写成清单", "个人知识库", "工具的取舍", "一人公司的财务纪律",
+        "不要接的活", "被白嫖", "先报价还是先聊", "合同里最容易漏的条款",
+        "合作方的选择", "一个人的会议", "淡季做内容旺季接单", "把经验写成产品",
+        "教别人是最好的学习", "复利的信任", "不做的事清单"
       ]
     },
     {
       id: "startup", label: "产品与创业", icon: I.sprout,
       topics: [
-        "最小可行产品", "冷启动", "用户访谈", "留存率", "增长飞轮",
-        "护城河", "单位经济模型", "首批种子用户", "产品市场契合", "早熟的规模化",
-        "做减法", "需求真伪", "分发能力", "合伙人选择", "融资的代价",
-        "先做小工具还是做平台", "免费用户的价值", "产品债", "上线第一个版本",
-        "怎么判断该转型", "创始人模式", "从 0 到 1 与从 1 到 10"
+        "最小可行产品", "冷启动", "用户访谈", "留存率",
+        "增长飞轮", "护城河", "单位经济模型", "首批种子用户",
+        "产品市场契合", "早熟的规模化", "做减法", "需求真伪",
+        "分发能力", "合伙人选择", "融资的代价", "先做小工具还是做平台",
+        "免费用户的价值", "产品债", "上线第一个版本", "怎么判断该转型",
+        "创始人模式", "从 0 到 1 与从 1 到 10", "定价的勇气", "首批一百个用户",
+        "社区型产品", "工具型产品", "内容型产品", "渠道比产品更难",
+        "不要过早招人", "创始人的时间分配", "数据指标的选择", "虚荣指标",
+        "北极星指标", "用户分层", "付费转化", "免费增值的边界",
+        "客服即产品", "口碑的第一推动", "发布节奏", "版本号心理学",
+        "用户反馈的取舍", "需求排序", "竞品分析的正确做法", "不要为了融资做产品",
+        "退出策略", "商业模式画布", "规模化前的检查清单"
       ]
     },
     {
       id: "money", label: "理财与投资", icon: I.coin,
       topics: [
-        "应急金", "复利", "生活方式膨胀", "沉没成本", "机会成本",
-        "净资产", "现金流", "高息负债", "风险承受度", "分散配置",
-        "定投", "仓位管理", "安全边际", "能力圈", "周期",
-        "现金是氧气", "长期主义", "回撤", "追涨杀跌", "闲钱",
+        "应急金", "复利的数学本质", "生活方式膨胀", "沉没成本",
+        "机会成本与选择", "净资产", "现金流", "高息负债",
+        "风险承受度", "分散配置", "定投", "仓位管理",
+        "安全边际与安全垫", "能力圈与投资边界", "周期", "现金是氧气",
+        "长期主义", "回撤", "追涨杀跌", "闲钱",
         "记账", "该不该买保险", "第一笔投资", "亏损时的心态",
-        "工资以外的收入", "消费与投资的界限", "怎么看待别人的收益截图"
+        "工资以外的收入", "消费与投资的界限", "怎么看待别人的收益截图", "第一个十万",
+        "风险与收益的关系", "不要把鸡蛋放一个篮子", "本金的重要性", "通胀",
+        "利率", "房产与流动性", "保险的本质", "杠杆的两面",
+        "止损与止盈", "信息优势", "时间在投资里的作用", "简单胜过复杂",
+        "不要预测市场", "交易成本", "税", "汇率",
+        "黄金", "投资自己", "远离不懂的东西", "别人的建议",
+        "长期持有的难处", "月度复盘", "给未来的自己存钱"
       ]
     },
     {
       id: "dev", label: "开发与技术", icon: I.wrench,
       topics: [
-        "技术债", "过早优化", "可观测性", "单点故障", "容器化",
-        "自动化测试", "重构的时机", "代码评审", "命名", "文档",
-        "选型焦虑", "脚手架", "灰度发布", "性能优化的顺序", "日志",
-        "缓存", "幂等", "数据迁移", "开关与配置", "上线前的检查清单",
-        "为什么要写测试", "开源与自建", "删掉代码的勇气",
-        "技术选型该听谁的", "接手别人的项目",
-        "一个人能不能维护一个产品", "AI 结对编程", "把脚本变成产品"
+        "技术债", "过早优化", "可观测性", "单点故障",
+        "容器化", "自动化测试", "重构的时机", "代码评审",
+        "命名", "文档", "选型焦虑", "脚手架",
+        "灰度发布", "性能优化的顺序", "日志", "缓存",
+        "幂等", "数据迁移", "开关与配置", "上线前的检查清单",
+        "为什么要写测试", "开源与自建", "删掉代码的勇气", "技术选型该听谁的",
+        "接手别人的项目", "一个人能不能维护一个产品", "AI 结对编程", "把脚本变成产品",
+        "注释与文档的区别", "小步提交", "结对的收益", "本地开发环境",
+        "数据库索引", "慢查询", "监控告警", "日志分级",
+        "配置即代码", "接口版本管理", "向后兼容", "废弃接口的下线",
+        "依赖管理", "供应链安全", "权限模型", "限流与熔断",
+        "重试与退避", "分布式事务的取舍", "消息队列", "状态机",
+        "测试金字塔", "端到端测试的价值", "压测", "容量规划",
+        "故障演练", "值班与响应", "复盘不追责", "技术雷达",
+        "架构的演进而非设计"
       ]
     },
     {
       id: "wellbeing", label: "身心状态", icon: I.heart,
       topics: [
-        "渐进超负荷", "休息日", "肌肉记忆", "形式大于重量", "平台期",
-        "热身", "稳定胜过强度", "睡眠", "恢复债", "呼吸",
-        "久坐", "喝水", "每天走一万步", "什么算进步", "心理能量",
-        "专注的时段", "放空", "拖延的真正原因", "和自己比较"
+        "渐进超负荷", "休息日", "肌肉记忆", "形式大于重量",
+        "平台期", "热身", "稳定胜过强度", "睡眠",
+        "恢复债", "呼吸", "久坐", "喝水",
+        "每天走一万步", "什么算进步", "心理能量", "专注的时段",
+        "放空", "拖延的真正原因", "和自己比较", "呼吸练习",
+        "拉伸", "核心力量", "走路", "晒太阳",
+        "眼睛休息", "颈椎", "腰", "久坐的代价",
+        "睡眠时长", "睡前屏幕", "咖啡因的半衰期", "饭后的困",
+        "情绪劳动", "独处", "社交电量", "意义感",
+        "小胜利", "记录", "恢复日", "训练日志",
+        "运动前后的吃", "受伤后复出", "疼痛信号", "体检",
+        "牙齿", "听力", "视力", "体脂率的意义",
+        "肌少症", "平衡能力", "心肺功能", "柔韧性",
+        "生活习惯的复利"
       ]
     }
   ];
@@ -1384,13 +1573,97 @@
      状态
      ============================================================ */
 
+  // 读取开启的分类：非法值、空数组都退回「全部开启」
+  function loadNiches() {
+    var raw = load("enabled", null);
+    if (raw === null) return ALL_NICHE_IDS.slice();
+    var list = String(raw).split(",").filter(function (id) {
+      return ALL_NICHE_IDS.indexOf(id) >= 0;
+    });
+    return list.length ? list : ALL_NICHE_IDS.slice();
+  }
+
+  function saveNiches() {
+    save("enabled", state.enabled.join(","));
+  }
+
+  // 当前生效的分类（顺序始终跟 NICHES 一致，避免下拉菜单跳动）
+  function enabledNiches() {
+    return NICHES.filter(function (n) { return state.enabled.indexOf(n.id) >= 0; });
+  }
+
+  // 抽题池：所有已开启分类的题目合并。
+  // 之所以不「先随机选分类再随机选题」，是因为各分类题量不等，
+  // 那样小分类会被过度放大。合并后每题等概率，更公平。
+  function activePool() {
+    var pool = [];
+    enabledNiches().forEach(function (n) {
+      pool = pool.concat(n.topics);
+    });
+    return pool;
+  }
+
+  /* ---------- 分类开关 ---------- */
+
+  // 保证至少留一个分类，避免抽题池变空
+  function ensureMinNiches() {
+    if (state.enabled.length >= 1) return true;
+    var keep = NICHES.some(function (n) { return n.id === state.niche; })
+      ? state.niche : NICHES[0].id;
+    state.enabled = [keep];
+    return false;
+  }
+
+  function toggleNiche(id) {
+    var at = state.enabled.indexOf(id);
+    if (at >= 0) {
+      if (state.enabled.length === 1) return false;   // 最后一个不给关
+      state.enabled.splice(at, 1);
+    } else {
+      state.enabled.push(id);
+    }
+    // 顺序对齐 NICHES，菜单与列表才稳定
+    state.enabled = ALL_NICHE_IDS.filter(function (x) {
+      return state.enabled.indexOf(x) >= 0;
+    });
+    saveNiches();
+
+    // 当前选中的分类被关掉了，就落到第一个还开着的分类
+    if (state.enabled.indexOf(state.niche) < 0) state.niche = state.enabled[0];
+
+    if (state.mode !== "deep-research") {
+      lastIndex = 0;
+      setTopic(pick(activePool()));
+    }
+    renderAll();
+    updateNicheMenu();
+    return true;
+  }
+
+  function toggleAllNiches(on) {
+    state.enabled = on ? ALL_NICHE_IDS.slice() : [state.niche];
+    if (state.enabled.indexOf(state.niche) < 0) state.enabled = [NICHES[0].id];
+    state.niche = state.enabled.indexOf(state.niche) >= 0 ? state.niche : state.enabled[0];
+    saveNiches();
+    if (state.mode !== "deep-research") {
+      lastIndex = 0;
+      setTopic(pick(activePool()));
+    }
+    renderAll();
+    updateNicheMenu();
+  }
+
   function paletteExists(id) {
     return PALETTES.some(function (p) { return p.id === id; });
   }
 
+  // 全部开启作为默认；用户可在设置里关掉不想练的分类
+  var ALL_NICHE_IDS = NICHES.map(function (n) { return n.id; });
+
   var state = {
     mode: load("mode", "off-the-cuff"),
     niche: load("niche", NICHES[0].id),
+    enabled: loadNiches(),
     theme: document.documentElement.dataset.theme === "light" ? "light" : "dark",
     palette: load("palette", DEFAULT_PALETTE),
     speechSeconds: clamp(Number(load("speech", 60)) || 60, 30, 900),
@@ -1414,7 +1687,7 @@
     return MODES[0];
   }
   function activeTopics() {
-    return state.mode === "deep-research" ? RESEARCH.topics : nicheById(state.niche).topics;
+    return state.mode === "deep-research" ? RESEARCH.topics : activePool();
   }
   function activeNiche() {
     return state.mode === "deep-research" ? RESEARCH : nicheById(state.niche);
@@ -1477,11 +1750,18 @@
 
   function renderNiche() {
     var n = activeNiche();
+    var on = enabledNiches();
     el.nicheEmoji.innerHTML = n.icon || I.spark;
     el.nicheLabel.textContent = n.label;
-    el.nicheCount.textContent = n.topics.length + " 题";
+    var count = state.mode === "deep-research" ? RESEARCH.topics.length : activePool().length;
+    // 分类数写进数字里，避免中间那个「·」分隔符换行时错位
+    el.nicheCount.textContent = (state.mode === "deep-research" ? "" : on.length + " 类 · ") + count + " 题";
     el.niche.hidden = state.mode === "deep-research";
     el.nicheTrigger.disabled = isBusy();
+  }
+
+  function updateNicheMenu() {
+    if (state.mode !== "deep-research" && !el.nicheMenu.hidden) buildMenu();
   }
 
   function renderReel() {
@@ -1517,7 +1797,9 @@
 
   function buildMenu() {
     el.nicheMenu.innerHTML = "";
-    NICHES.forEach(function (n) {
+    var list = enabledNiches();
+    if (!list.length) list = NICHES.slice();
+    list.forEach(function (n) {
       var row = document.createElement("div");
       row.className = "niche-option" + (n.id === state.niche ? " is-active" : "");
       row.setAttribute("role", "option");
@@ -2028,19 +2310,105 @@
           '<p class="duration-hint">只在「先查再讲」模式用得上。研究中途还能再加时间。</p>' +
         "</div>" +
 
+        '<div class="field">' +
+          '<div class="field-head">' +
+            '<span class="field-label" id="pickLabel">题目分类</span>' +
+            '<button type="button" class="link-btn" id="pickAll">全选 / 全不选</button>' +
+          "</div>" +
+          '<div class="pick-list" id="pickList" role="group" aria-labelledby="pickLabel"></div>' +
+          '<p class="field-hint" id="pickHint"></p>' +
+        "</div>" +
+
         '<label class="check-row"><input type="checkbox" id="setMuted"' + (state.muted ? " checked" : "") + ">" +
           "<span>静音提示音</span></label>" +
 
         '<p class="panel-note">全部存在浏览器本地，不上传任何东西。</p>' +
-        '<button type="button" class="btn primary" id="setDone" style="width:100%;margin-top:20px">完成</button>' +
+        '<div class="panel-foot">' +
+          '<button type="button" class="btn primary" id="setDone" style="width:100%">完成</button>' +
+        "</div>" +
       "</div>";
 
     document.body.appendChild(wrap);
 
+    var panel = wrap.querySelector(".panel");
+    var pickList = wrap.querySelector("#pickList");
+    var pickHint = wrap.querySelector("#pickHint");
+
+    // 吸底按钮会盖住最后几行，按它的实际高度补足面板底部空间。
+    // 不写死数值：按钮高度受字体、文案折行影响，量出来才可靠。
+    function padForFooter() {
+      var foot = wrap.querySelector(".panel-foot");
+      if (!foot) return;
+      var h = Math.ceil(foot.getBoundingClientRect().height);
+      if (h > 0) panel.style.paddingBottom = (h + 8) + "px";
+    }
+
+    // 每次变化整块重绘：状态驱动，避免逐项同步漏掉边界情况
+    function renderPick() {
+      var on = enabledNiches();
+      var lastOne = state.enabled.length === 1;
+      pickList.innerHTML = NICHES.map(function (n) {
+        var active = state.enabled.indexOf(n.id) >= 0;
+        // 只剩一个开启时，把它自己禁掉，给出明确反馈而不是静默无反应
+        var locked = active && lastOne;
+        return '<button type="button" class="pick-item' + (active ? " is-on" : "") + '"' +
+          ' data-niche="' + n.id + '"' +
+          ' role="checkbox" aria-checked="' + (active ? "true" : "false") + '"' +
+          (locked ? ' aria-disabled="true"' : "") +
+          ">" +
+          '<span class="pick-box" aria-hidden="true"></span>' +
+          '<span class="pick-icon" aria-hidden="true">' + (n.icon || I.spark) + "</span>" +
+          '<span class="pick-name">' + n.label + "</span>" +
+          '<span class="pick-num">' + n.topics.length + "</span>" +
+          "</button>";
+      }).join("");
+
+      var total = activePool().length;
+      pickHint.textContent = lastOne
+        ? "已开启 " + on[0].label + "，共 " + total + " 题。至少保留一个分类，想换就开别的再关这个。"
+        : "已开启 " + on.length + " / " + NICHES.length + " 个分类，共 " + total +
+          " 题会被抽到。抽题在这个合集里等概率选取。";
+
+      padForFooter();
+
+      Array.prototype.forEach.call(pickList.querySelectorAll(".pick-item"), function (btn) {
+        btn.addEventListener("click", function () {
+          if (!toggleNiche(btn.dataset.niche)) {
+            pickHint.textContent = "至少要保留一个分类。先开另一个，再关这个。";
+            var el2 = btn;
+            el2.animate && el2.animate(
+              [{ transform: "translateX(0)" }, { transform: "translateX(-3px)" },
+               { transform: "translateX(3px)" }, { transform: "translateX(0)" }],
+              { duration: 220, easing: "ease-out" });
+            return;
+          }
+          renderPick();
+        });
+        btn.addEventListener("keydown", function (e) {
+          var all = Array.prototype.slice.call(pickList.querySelectorAll(".pick-item"));
+          var at = all.indexOf(btn);
+          if (e.key === "ArrowDown") { e.preventDefault(); all[Math.min(all.length - 1, at + 1)].focus(); }
+          else if (e.key === "ArrowUp") { e.preventDefault(); all[Math.max(0, at - 1)].focus(); }
+        });
+      });
+    }
+    renderPick();
+    requestAnimationFrame(padForFooter);
+    if (window.ResizeObserver) {
+      try {
+        new ResizeObserver(padForFooter).observe(wrap.querySelector(".panel-foot"));
+      } catch (e) {}
+    }
+
+    wrap.querySelector("#pickAll").addEventListener("click", function () {
+      var allOn = state.enabled.length === NICHES.length;
+      toggleAllNiches(!allOn);
+      renderPick();
+    });
+
     var speechInput = wrap.querySelector("#setSpeech");
     var researchInput = wrap.querySelector("#setResearch");
     var mutedInput = wrap.querySelector("#setMuted");
-    var panel = wrap.querySelector(".panel");
 
     function paintFill(input) {
       var min = Number(input.min) || 0;
@@ -2138,6 +2506,9 @@
 
   if (state.mode !== "off-the-cuff" && state.mode !== "deep-research") state.mode = "off-the-cuff";
   if (!NICHES.some(function (n) { return n.id === state.niche; })) state.niche = NICHES[0].id;
+  ensureMinNiches();
+  // 上次选的分类若已被关掉，落到第一个还开着的
+  if (state.enabled.indexOf(state.niche) < 0) state.niche = state.enabled[0];
 
   applyAppearance();
 

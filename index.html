@@ -333,13 +333,18 @@
   .niche-caret svg { width: 15px; height: 15px; }
   .niche-trigger:hover .niche-caret { color: var(--text-2); }
   .niche.is-open .niche-caret { transform: rotate(180deg); color: var(--c); }
+  /* 下方空间不足时菜单向上展开 */
+  .niche.is-flip .niche-menu { top: auto; bottom: calc(100% + 7px); }
 
   .niche-menu {
     position: absolute;
     top: calc(100% + 7px);
     left: 0; right: 0;
     z-index: 30;
-    max-height: min(370px, 54dvh);
+    /* 限高由 JS 按「菜单离视口底还有多少空间」算出来写进 --menu-max：
+       写死 370px 在 iPad 上浪费空间，54dvh 在手机横屏只剩 211px。 */
+    max-height: var(--menu-max, 320px);
+    overscroll-behavior: contain;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
     padding: 6px;
@@ -2001,12 +2006,35 @@
     closeMenu(true);
   }
 
+  // 按实际可用空间决定菜单高度与展开方向：
+  // 「最后一项能不能点到」不该取决于屏幕够不够高。
+  function fitMenu() {
+    var vh = window.innerHeight;
+    var rect = el.nicheTrigger.getBoundingClientRect();
+    var GAP = 7;
+    var MARGIN = 12;
+    var below = vh - rect.bottom - GAP - MARGIN;
+    var above = rect.top - GAP - MARGIN;
+    var menuH = el.nicheMenu.scrollHeight;
+
+    // 优先向下；只有下方放不下、且上方更宽裕时才向上翻
+    var flip = menuH > below && above > below;
+    el.niche.classList.toggle("is-flip", flip);
+    var avail = flip ? above : below;
+    // 上限 78% 视口高：大屏手机上 12 项能一次看完，又不至于完全盖住主内容
+    var cap = Math.round(vh * 0.78);
+    var max = Math.max(180, Math.min(avail, cap));
+    el.nicheMenu.style.setProperty("--menu-max", max + "px");
+  }
+
   function openMenu() {
     if (isBusy()) return;
     buildMenu();
     el.nicheMenu.hidden = false;
     el.niche.classList.add("is-open");
     el.nicheTrigger.setAttribute("aria-expanded", "true");
+    // 先显示才能量到真实高度，再据此定高
+    fitMenu();
     var first = el.nicheMenu.querySelector(".niche-option.is-active") ||
       el.nicheMenu.querySelector(".niche-option");
     if (first) first.focus();

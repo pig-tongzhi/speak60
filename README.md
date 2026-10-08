@@ -199,6 +199,12 @@ node tools/check-topics.mjs
 
 设置 →「抽题音色」可以换 5 档：清脆（默认）/ 木质 / 轻巧 / 低沉 / 柔和。点一个就会响一声。
 
+想自己调参数就用试听台 `tools/sound-lab.html`：12 个候选（三组思路）+ 7 个滑块（基频、衰减、音色、敲击感、噪声成分、音高滑动、音量），还有「连播」「跑一次完整转盘」「慢速听单声」三个试听按钮。它的减速曲线与应用完全一致，所以听到的就是真实效果。
+
+```bash
+./serve.sh     # 起来后访问 http://<你的IP>:8080/tools/sound-lab.html
+```
+
 ## 声音
 
 有声音，三处提示音：抽题定格、开始计时、时间到。用 Web Audio 现场合成正弦音，没有音频文件，设置里可关。
@@ -242,6 +248,9 @@ iPhone SE 320×568 · iPhone 8 375×667 · iPhone 12/13 390×844 · iPhone 14 Pr
 | GitHub Pages | `https://pig-tongzhi.github.io/speak60/` | `git push`，等 Pages 构建（约 1 分钟） |
 | 局域网 | `./serve.sh` 打印的地址 | 改完刷新即可 |
 
+局域网服务是「服务整个项目目录」，所以试听台也在同一个端口下：
+`http://<你的IP>:8080/tools/sound-lab.html`
+
 腾讯云那份用脚本部署，**幂等且可回滚**：
 
 ```bash
@@ -260,5 +269,6 @@ iPhone SE 320×568 · iPhone 8 375×667 · iPhone 12/13 390×844 · iPhone 14 Pr
 |---|---|
 | `index.html` | 应用本体，单文件，零外部依赖 |
 | `tools/check-topics.mjs` | 题库自检：题数、重复、命名冲突 |
+| `tools/sound-lab.html` | 抽题声音试听台：12 个候选 + 参数滑块 |
 | `serve.sh` | 局域网启停脚本 |
 | `palette-preview.html` | 当初挑配色用的对比页 |

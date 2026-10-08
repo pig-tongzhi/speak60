@@ -1,0 +1,361 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>抽题声音试听 — 即兴一分钟</title>
+<style>
+  :root {
+    --bg:#0a0d0c; --card:rgba(255,255,255,.045); --line:rgba(255,255,255,.10);
+    --text:#f2f6f4; --text2:#a9b6b0; --text3:#7c8883; --c:#4aa8ff;
+    --wash:rgba(74,168,255,.12); --edge:rgba(74,168,255,.32);
+  }
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  body{font-family:"PingFang SC","Hiragino Sans GB","Noto Sans SC",system-ui,-apple-system,sans-serif;
+       background:var(--bg);color:var(--text);line-height:1.5;-webkit-font-smoothing:antialiased;
+       padding:22px 16px 60px}
+  .atmo{position:fixed;inset:0;z-index:0;pointer-events:none;
+        background:radial-gradient(900px 500px at 50% -10%, var(--wash), transparent 65%)}
+  .wrap{position:relative;z-index:1;max-width:820px;margin:0 auto}
+  h1{font-size:19px;font-weight:700}
+  .sub{color:var(--text3);font-size:13px;margin-top:5px;line-height:1.7}
+  .hint{margin-top:12px;padding:11px 13px;font-size:12.5px;color:var(--text2);
+        background:var(--wash);border:1px solid var(--edge);border-radius:12px;line-height:1.7}
+
+  h2{font-size:13px;font-weight:700;letter-spacing:.02em;color:var(--text2);
+     margin:26px 0 11px;display:flex;align-items:center;gap:8px}
+  h2 .tag{font-size:10.5px;font-weight:600;padding:2px 8px;border-radius:6px;
+          color:var(--c);background:var(--wash);border:1px solid var(--edge)}
+
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px}
+  .tile{display:flex;flex-direction:column;gap:7px;padding:13px;text-align:left;
+        background:var(--card);border:1px solid var(--line);border-radius:14px;
+        color:inherit;font-family:inherit;cursor:pointer;transition:.16s}
+  .tile:hover{border-color:var(--edge);background:rgba(74,168,255,.06)}
+  .tile.playing{border-color:var(--c);box-shadow:0 0 0 1px var(--c) inset}
+  .tile.picked{border-color:var(--c);background:var(--wash)}
+  .tile .name{font-size:13.5px;font-weight:600}
+  .tile .desc{font-size:11.5px;color:var(--text3);line-height:1.55}
+  .tile .wave{display:flex;align-items:flex-end;gap:2px;height:22px}
+  .tile .wave i{flex:1;background:var(--c);border-radius:1px;opacity:.55}
+
+  .lab{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px;
+       padding:15px;background:var(--card);border:1px solid var(--line);border-radius:16px}
+  .ctl{display:flex;flex-direction:column;gap:4px}
+  .ctl .row{display:flex;justify-content:space-between;align-items:baseline;font-size:12.5px}
+  .ctl b{font-weight:600}
+  .ctl i{font-style:normal;color:var(--c);font-variant-numeric:tabular-nums;font-weight:600}
+  input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:22px;background:none;cursor:pointer}
+  input[type=range]::-webkit-slider-runnable-track{height:4px;border-radius:2px;background:rgba(255,255,255,.12)}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;margin-top:-6px;
+    border-radius:50%;background:#fff;border:3px solid #161b19}
+  .btns{display:flex;flex-wrap:wrap;gap:9px;margin-top:14px}
+  .btn{display:inline-flex;align-items:center;gap:7px;padding:12px 18px;min-height:46px;
+       font-family:inherit;font-size:14px;font-weight:600;border-radius:12px;cursor:pointer;
+       color:var(--text);background:var(--card);border:1px solid var(--line);transition:.16s}
+  .btn:hover{border-color:var(--edge)}
+  .btn.primary{color:#04140c;background:linear-gradient(180deg,#86c8ff,#4aa8ff 46%,#1d6fc4);
+    border-color:transparent;box-shadow:0 6px 20px rgba(74,168,255,.3)}
+  .note{margin-top:14px;font-size:12px;color:var(--text3);line-height:1.75;
+        word-break:break-word;overflow-wrap:anywhere}
+  code{font-family:ui-monospace,Menlo,monospace;font-size:12px;color:var(--text2);
+       background:rgba(255,255,255,.06);padding:1px 5px;border-radius:4px}
+</style>
+</head>
+<body>
+<div class="atmo" aria-hidden="true"></div>
+<div class="wrap">
+  <h1>抽题声音 · 试听</h1>
+  <p class="sub">点任意一个试听。第一组是照 iOS 计时器滚轮那种「哒」做的，另外几组是不同思路的对照。</p>
+  <div class="hint">
+    <b>先点一下页面任意处</b>激活音频（手机浏览器要求先有交互）。<br />
+    点候选会连播 6 声试听；想听整段效果就点下面的「跑一次完整转盘」。
+  </div>
+
+  <h2>A · 清脆咔哒 <span class="tag">接近 iOS 计时器</span></h2>
+  <div class="grid" id="groupA"></div>
+
+  <h2>B · 更闷 / 更低频</h2>
+  <div class="grid" id="groupB"></div>
+
+  <h2>C · 其它思路</h2>
+  <div class="grid" id="groupC"></div>
+
+  <h2>调参 <span class="tag" id="tunedFrom">基于：iOS 计时器</span></h2>
+  <div class="lab" id="lab"></div>
+  <div class="btns">
+    <button class="btn primary" id="play8">▶ 连播 6 声</button>
+    <button class="btn" id="playSpin">▶ 跑一次完整转盘</button>
+    <button class="btn" id="playSlow">▶ 慢速间隔（听单声）</button>
+    <button class="btn" id="copy">复制参数</button>
+  </div>
+  <p class="note" id="out"></p>
+
+  <p class="note">
+    觉得方向对了但还想微调，就拖上面的滑块——<code>基频</code>决定音高，<code>衰减</code>决定长短，
+    <code>亮度</code>决定是"叮"还是"哒"，<code>敲击感</code>控制起音的那一下。<br />
+    挑好告诉我<b>哪个候选（A1/B2…）+ 如果调过就把参数发我</b>，我换进应用并加进设置里。
+  </p>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  var ctx = null;
+  function audio() {
+    if (!ctx) {
+      var C = window.AudioContext || window.webkitAudioContext;
+      if (!C) return null;
+      ctx = new C();
+    }
+    if (ctx.state === "suspended" && ctx.resume) ctx.resume();
+    return ctx;
+  }
+  document.addEventListener("pointerdown", function () { audio(); }, { once: true });
+
+  var noiseBuf = null;
+  function noise(c) {
+    if (noiseBuf && noiseBuf.sampleRate === c.sampleRate) return noiseBuf;
+    var n = Math.floor(c.sampleRate * 0.06);
+    var b = c.createBuffer(1, n, c.sampleRate);
+    var d = b.getChannelData(0);
+    for (var i = 0; i < n; i++) d[i] = Math.random() * 2 - 1;
+    noiseBuf = b;
+    return b;
+  }
+
+  // 一个「咔哒」：可选敲击噪声 + 音调本体（正弦/三角/方波）
+  function playTick(p) {
+    var c = audio();
+    if (!c) return;
+    try {
+      var t = c.currentTime;
+      var out = c.createGain();
+      out.gain.value = p.gain;
+      out.connect(c.destination);
+
+      if (p.click > 0.01) {
+        var s = c.createBufferSource();
+        s.buffer = noise(c);
+        var bp = c.createBiquadFilter();
+        bp.type = "bandpass";
+        bp.frequency.value = p.freq * 2.4;
+        bp.Q.value = 0.9;
+        var cg = c.createGain();
+        cg.gain.setValueAtTime(p.click, t);
+        cg.gain.exponentialRampToValueAtTime(0.0001, t + Math.min(0.012, p.decay * 0.5));
+        s.connect(bp); bp.connect(cg); cg.connect(out);
+        s.start(t); s.stop(t + 0.03);
+      }
+
+      if (p.noise > 0.01) {
+        var s2 = c.createBufferSource();
+        s2.buffer = noise(c);
+        var lp = c.createBiquadFilter();
+        lp.type = "lowpass";
+        lp.frequency.value = p.tone === 2 ? p.freq * 1.6 : p.freq * 3;
+        var ng = c.createGain();
+        ng.gain.setValueAtTime(p.noise, t);
+        ng.gain.exponentialRampToValueAtTime(0.0001, t + p.decay);
+        s2.connect(lp); lp.connect(ng); ng.connect(out);
+        s2.start(t); s2.stop(t + p.decay + 0.02);
+      }
+
+      if (p.tone !== 2) {
+        var o = c.createOscillator();
+        o.type = p.tone === 0 ? "sine" : "triangle";
+        o.frequency.setValueAtTime(p.freq * (p.bend || 1), t);
+        if (p.bend) o.frequency.exponentialRampToValueAtTime(p.freq, t + p.decay * 0.7);
+        var g = c.createGain();
+        g.gain.setValueAtTime(0.0001, t);
+        g.gain.exponentialRampToValueAtTime(1, t + 0.0015);
+        g.gain.exponentialRampToValueAtTime(0.0001, t + p.decay);
+        o.connect(g); g.connect(out);
+        o.start(t); o.stop(t + p.decay + 0.02);
+      }
+    } catch (e) {}
+  }
+
+  // 默认参数。tone: 0 正弦 / 1 三角 / 2 纯噪声
+  var PRESETS = [
+    // A 组：照 iOS 滚轮那种清脆哒
+    { g:"A", id:"A1", name:"iOS 计时器", desc:"高频短促、几乎无尾音，最接近滚轮",
+      p:{freq:2100, decay:0.016, tone:0, click:0.32, noise:0.05, gain:1, bend:1.06} },
+    { g:"A", id:"A2", name:"iOS 加木质", desc:"多一层低音，像木块敲击",
+      p:{freq:1750, decay:0.022, tone:1, click:0.30, noise:0.14, gain:1, bend:1.05} },
+    { g:"A", id:"A3", name:"更亮更尖", desc:"音高更高，更「叮」一点",
+      p:{freq:2900, decay:0.012, tone:0, click:0.38, noise:0.02, gain:1, bend:1.08} },
+    { g:"A", id:"A4", name:"纯敲击（无音调）", desc:"只有起音那一下，最干脆",
+      p:{freq:2400, decay:0.010, tone:2, click:0.42, noise:0.20, gain:1} },
+    { g:"A", id:"A5", name:"稍长有回响", desc:"尾音略长，像金属拨片",
+      p:{freq:1950, decay:0.034, tone:1, click:0.26, noise:0.06, gain:1, bend:1.04} },
+
+    // B 组：更闷
+    { g:"B", id:"B1", name:"低音沉闷", desc:"像老式机械计数器的闷响",
+      p:{freq:900, decay:0.026, tone:1, click:0.26, noise:0.10, gain:1, bend:1.05} },
+    { g:"B", id:"B2", name:"低沉短促", desc:"音高低、衰减极快",
+      p:{freq:620, decay:0.020, tone:0, click:0.34, noise:0.08, gain:1} },
+    { g:"B", id:"B3", name:"木头敲击", desc:"噪声为主、低通滤波，像敲木头",
+      p:{freq:1200, decay:0.030, tone:2, click:0.36, noise:0.30, gain:1} },
+    { g:"B", id:"B4", name:"钟摆滴答", desc:"很轻很短，像秒针",
+      p:{freq:3200, decay:0.009, tone:0, click:0.30, noise:0.02, gain:1, bend:1.1} },
+
+    // C 组：其它思路
+    { g:"C", id:"C1", name:"打字机", desc:"带一点金属共鸣的打字声",
+      p:{freq:1400, decay:0.045, tone:1, click:0.30, noise:0.18, gain:1, bend:1.03} },
+    { g:"C", id:"C2", name:"气泡音", desc:"音高上滑，像水滴",
+      p:{freq:820, decay:0.055, tone:0, click:0.16, noise:0.02, gain:1, bend:1.9} },
+    { g:"C", id:"C3", name:"电子哔", desc:"短促方波感，偏数字",
+      p:{freq:1600, decay:0.020, tone:1, click:0.20, noise:0.0, gain:.9, bend:1.0} }
+  ];
+
+  var state = { picked: PRESETS[0], cur: Object.assign({}, PRESETS[0].p) };
+  var DEFAULTS = { freq:2000, decay:0.02, tone:0, click:0.3, noise:0.05, gain:1, bend:1.05 };
+
+  // ---- 波形小图：按参数画个示意，方便一眼分辨 ----
+  function waveHtml(p) {
+    var bars = 14, h = [];
+    for (var i = 0; i < bars; i++) {
+      var x = i / (bars - 1);
+      var env = Math.exp(-x * (0.9 / Math.max(0.004, p.decay)) * 0.22);
+      var v = Math.max(2, Math.round(env * 22));
+      h.push('<i style="height:' + v + 'px"></i>');
+    }
+    return h.join("");
+  }
+
+  function tiles(host, list) {
+    var el = document.getElementById(host);
+    el.innerHTML = "";
+    list.forEach(function (item) {
+      var b = document.createElement("button");
+      b.type = "button";
+      b.className = "tile" + (state.picked.id === item.id ? " picked" : "");
+      b.dataset.id = item.id;
+      b.innerHTML = '<span class="name">' + item.id + " · " + item.name + "</span>" +
+        '<span class="desc">' + item.desc + "</span>" +
+        '<span class="wave">' + waveHtml(item.p) + "</span>";
+      b.addEventListener("click", function () { pick(item); });
+      el.appendChild(b);
+    });
+  }
+
+  function refreshTiles() {
+    Array.prototype.forEach.call(document.querySelectorAll(".tile"), function (t) {
+      t.classList.toggle("picked", t.dataset.id === state.picked.id);
+    });
+  }
+
+  function pick(item) {
+    state.picked = item;
+    state.cur = Object.assign({}, DEFAULTS, item.p);
+    document.getElementById("tunedFrom").textContent = "基于：" + item.id + " " + item.name;
+    buildLab();
+    refreshTiles();
+    // 点候选只做「听一下」：连播 6 声、间隔 140ms。
+    // 不要同时跑完整转盘，否则两个循环叠在一起，听起来不是真实效果。
+    playBurst(6, 140);
+  }
+
+  // ---- 参数滑块 ----
+  var CONTROLS = [
+    { key:"freq",  label:"基频",   min:300,  max:4000, step:10,   fmt:function(v){return Math.round(v)+" Hz";} },
+    { key:"decay", label:"衰减（尾音长短）", min:0.005, max:0.12, step:0.001, fmt:function(v){return (v*1000).toFixed(0)+" ms";} },
+    { key:"tone",  label:"音色（0 正弦 / 1 三角 / 2 纯噪声）", min:0, max:2, step:1, fmt:function(v){return ["正弦","三角","纯噪声"][v];} },
+    { key:"click", label:"敲击感（起音噪声）", min:0, max:0.6, step:0.01, fmt:function(v){return v.toFixed(2);} },
+    { key:"noise", label:"噪声成分", min:0, max:0.5, step:0.01, fmt:function(v){return v.toFixed(2);} },
+    { key:"bend",  label:"音高滑动", min:1, max:2.2, step:0.01, fmt:function(v){return "×"+v.toFixed(2);} },
+    { key:"gain",  label:"音量",   min:0.2, max:2.5, step:0.05, fmt:function(v){return "×"+v.toFixed(2);} }
+  ];
+
+  function buildLab() {
+    var lab = document.getElementById("lab");
+    lab.innerHTML = "";
+    CONTROLS.forEach(function (c) {
+      var wrap = document.createElement("div");
+      wrap.className = "ctl";
+      wrap.innerHTML =
+        '<div class="row"><b>' + c.label + "</b><i>" + c.fmt(state.cur[c.key]) + "</i></div>" +
+        '<input type="range" min="' + c.min + '" max="' + c.max + '" step="' + c.step +
+        '" value="' + state.cur[c.key] + '">';
+      var input = wrap.querySelector("input");
+      var val = wrap.querySelector("i");
+      input.addEventListener("input", function () {
+        var v = Number(input.value);
+        state.cur[c.key] = v;
+        val.textContent = c.fmt(v);
+      });
+      input.addEventListener("change", function () { playBurst(3); });
+      lab.appendChild(wrap);
+    });
+    document.getElementById("out").textContent =
+      "当前参数：" + JSON.stringify(state.cur);
+  }
+
+  // ---- 播放 ----
+  var timers = [];
+  function clearTimers() { timers.forEach(clearTimeout); timers = []; }
+
+  function playBurst(n, gap) {
+    clearTimers();
+    gap = gap || 100;
+    audio();
+    for (var i = 0; i < n; i++) {
+      (function (i) {
+        timers.push(setTimeout(function () { playTick(state.cur); }, i * gap));
+      })(i);
+    }
+  }
+
+  // 跑一次真实转盘。间隔与应用里完全一致：
+  // 最快 45ms → 最慢 340ms，指数 1.55 让尾部拉得更开。
+  // 试听页必须和实际一致，否则听到的不是真实效果。
+  var GAP_FAST = 45, GAP_SLOW = 340;
+  function gapFor(rate) {
+    var k = 1 - Math.max(0, Math.min(1, rate));
+    return GAP_FAST + (GAP_SLOW - GAP_FAST) * Math.pow(k, 1.55);
+  }
+
+  function playSpin() {
+    clearTimers();
+    audio();
+    var DUR = 4600;
+    var t0 = performance.now();
+    var last = -1e9;
+    (function loop() {
+      var el = performance.now() - t0;
+      if (el > DUR) return;
+      var rate = Math.max(0, 1 - Math.min(1, el / DUR));
+      if (el - last >= gapFor(rate)) {
+        last = el;
+        var p = Object.assign({}, state.cur);
+        p.gain = state.cur.gain * (0.62 + 0.38 * rate);   // 减速时音量一起收
+        playTick(p);
+      }
+      requestAnimationFrame(loop);
+    })();
+  }
+
+  function copyParams() {
+    var txt = JSON.stringify({ from: state.picked.id, params: state.cur }, null, 2);
+    var out = document.getElementById("out");
+    out.textContent = txt;
+    if (navigator.clipboard) navigator.clipboard.writeText(txt).catch(function () {});
+  }
+
+  // ---- 初始化 ----
+  tiles("groupA", PRESETS.filter(function (p) { return p.g === "A"; }));
+  tiles("groupB", PRESETS.filter(function (p) { return p.g === "B"; }));
+  tiles("groupC", PRESETS.filter(function (p) { return p.g === "C"; }));
+  state.cur = Object.assign({}, DEFAULTS, PRESETS[0].p);
+  buildLab();
+
+  document.getElementById("play8").addEventListener("click", function () { playBurst(8); });
+  document.getElementById("playSlow").addEventListener("click", function () { playBurst(8, 420); });
+  document.getElementById("playSpin").addEventListener("click", playSpin);
+  document.getElementById("copy").addEventListener("click", copyParams);
+})();
+</script>
+</body>
+</html>

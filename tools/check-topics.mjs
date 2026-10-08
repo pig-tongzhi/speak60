@@ -57,19 +57,28 @@ for (const n of niches) {
   if (seenIds.has(n.id)) flag.push("id 重复");
   seenIds.add(n.id);
   if (dup.length) flag.push("内部重复: " + [...new Set(dup)].join("/"));
-  // 深度研究是「先查再讲」模式的独立抽题池，不与主池混合，
-  // 所以它和普通分类重名不影响抽题，不报。
-  if (n.id !== "deep-research") {
-    for (const t of n.topics) {
-      if (owner.has(t) && !dup.includes(t)) flag.push(`与「${owner.get(t)}」重复: ${t}`);
-      else owner.set(t, n.label);
-    }
+  // 深度研究现在也是一个普通分类，可以和别的分类同时勾选、进同一个抽题池，
+  // 所以它和普通分类重名同样要报（抽题池会去重，导致界面题数和实际池子对不上）。
+  for (const t of n.topics) {
+    if (owner.has(t) && !dup.includes(t)) flag.push(`与「${owner.get(t)}」重复: ${t}`);
+    else owner.set(t, n.label);
   }
   if (flag.length) bad++;
   console.log(n.label.padEnd(20) + String(n.topics.length).padStart(4) + (flag.length ? "  ⚠ " + flag.join("; ") : ""));
 }
 console.log("─".repeat(30));
 console.log("合计".padEnd(20) + String(total).padStart(4));
+
+// 题库冻结：2026-10 定的口径是「宁少勿多，先不加题」，压到了 500 题以内。
+// 真要加题，就调高这个上限，并在提交信息里说清为什么值得破例——
+// 别悄悄加，题库变多这件事上一轮就是这样失控的。
+const MAX_TOPICS = 500;
+if (total > MAX_TOPICS) {
+  console.log(`\n⚠ 题库共 ${total} 题，超过上限 ${MAX_TOPICS} 题。`);
+  console.log(`  当前口径是暂时不加题。确有必要加，请调高 tools/check-topics.mjs 里的 MAX_TOPICS 并说明理由。`);
+  bad++;
+}
+
 if (bad) {
   console.log(`\n⚠ ${bad} 个分类有问题，见上面标注。`);
   process.exit(1);

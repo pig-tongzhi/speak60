@@ -1843,14 +1843,6 @@
     return s2 + " 秒";
   }
 
-  function easeOutCubic(t) { return 1 - Math.pow(1 - t, 3); }
-
-  function planSpin(index, total, rand) {
-    rand = rand || Math.random;
-    var turns = 3 + Math.floor(rand() * 3);
-    var extra = total > 1 ? 1 + Math.floor(rand() * (total - 1)) : 0;
-    return { steps: turns * total + extra, landIndex: (index + turns * total + extra) % total };
-  }
 
   /* ============================================================
      音效
@@ -1984,15 +1976,17 @@
   }
 
   // rate: 1=转得最快，0=即将停。音量与音高随之微调，听感跟着减速走
-  function playTick(rate) {
+  function playTick(rate, silent) {
     if (state.muted || !state.spinSound) return;
     // 快速滚动阶段一秒走过几百格，必须节流，否则叠成噪音。
     // 间隔随 rate 变化，音频才跟着转盘一起慢下来。
     // 用 performance.now() 而不是 ctx.currentTime：音频时钟只用于调度，
     // 拿它做节流会因两者速率不同而失效。
     var wall = performance.now();
-    if (wall - lastTickWall < tickGapFor(rate)) return;
-    lastTickWall = wall;
+    if (!silent) {
+      if (wall - lastTickWall < tickGapFor(rate)) return;
+      lastTickWall = wall;
+    }
 
     ensureAudio(function (ctx) {
       try {
@@ -2539,45 +2533,63 @@
 
     var topics = activeTopics();
     var total = topics.length;
-    var from = lastIndex % total;
-    var plan = planSpin(from, total);
-    var started = performance.now();
-    var shown = -1;
-    var settled = false;
+    var startIdx = Math.floor(Math.random() * total);
 
-    function finish() {
+    // 老虎机式：每一格恰好配一声「哒」，用同一条减速曲线决定何时推进下一格。
+    // 所以声音与画面严格同步——一起由密变疏、一起停住。
+    // 间隔序列：第 k 格的间隔取 t=(k/count) 处的值，形成 45ms→340ms 的缓出。
+    // 累加直到刚好填满 SPIN_MS，于是转盘时长仍然固定。
+    var EST = 60;
+    var gaps = [];
+    for (var k = 0; k < EST; k++) gaps.push(tickGapFor(1 - k / EST));
+    var stepCount = 0, acc = 0;
+    while (stepCount < EST && acc + gaps[stepCount] <= SPIN_MS) {
+      acc += gaps[stepCount];
+      stepCount++;
+    }
+    if (stepCount < 6) stepCount = Math.min(6, total);   // 兜底：至少滚几格
+
+    var finalIdx = (startIdx + stepCount) % total;
+    var elapsed = 0;
+    var nextAt = gaps[0];
+    var stepsLeft = stepCount;
+    var settled = false;
+    var started = performance.now();
+
+    function settle() {
       if (settled) return;
       settled = true;
       clearSpin();
       stopSpinSound();
-      lastIndex = plan.landIndex;
+      lastIndex = finalIdx;
       state.spinning = false;
-      setTopic(topics[plan.landIndex]);
+      setTopic(topics[finalIdx]);
       renderAll();
       toneLand();
     }
 
-    // 用 setInterval + performance.now() 驱动，而不是 requestAnimationFrame：
-    // 页面在后台标签页 / 息屏时 rAF 会停止回调，转盘就会卡住转不完。
     function frame() {
       if (settled) return;
-      var t = Math.min(1, (performance.now() - started) / SPIN_MS);
-      var step = Math.min(plan.steps, Math.floor(easeOutCubic(t) * plan.steps));
-      if (step !== shown) {
-        shown = step;
-        var idx = (from + step) % total;
+      elapsed = performance.now() - started;
+      // while：间隔最短 45ms，而帧间隔约 16ms，极端情况下可能一帧要推两格
+      while (stepsLeft > 0 && elapsed >= nextAt) {
+        stepsLeft--;
+        var idx = (finalIdx - stepsLeft + total) % total;
         lastIndex = idx;
         el.reelPhrase.textContent = topics[idx];
-        // 每走过一格响一声。playTick 内部按 rate 决定是否真的发声，
-        // 所以转速越快越密、越慢越稀，直到"咔"地停住。
-        playTick(Math.max(0, 1 - t));
+        // 自己在这里发声，保证「一声一格」严格对齐
+        playTick(Math.max(0, 1 - elapsed / SPIN_MS), true);
+        if (stepsLeft === 0) break;
+        var done = stepCount - stepsLeft;          // 已推进的格数
+        nextAt += gaps[done] || tickGapFor(0);
       }
-      if (t >= 1) finish();
+      if (stepsLeft <= 0) { settle(); return; }
+      if (elapsed >= SPIN_MS + 120) { settle(); return; }
     }
 
     spinTick = setInterval(frame, 16);
     frame();
-    spinGuard = setTimeout(finish, SPIN_MS + 400);
+    spinGuard = setTimeout(settle, SPIN_MS + 600);
   }
 
   el.spinBtn.addEventListener("click", function () { unlockAudio(); spin(); });

@@ -903,6 +903,30 @@
   .pick-item:disabled { opacity: 0.45; cursor: not-allowed; }
   .pick-item:disabled:hover { background: none; }
 
+  /* 音色选择：横向小胶囊 */
+  .tones { display: flex; flex-wrap: wrap; gap: 7px; }
+  .tone-chip {
+    padding: 9px 14px;
+    min-height: 40px;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-2);
+    background: var(--chip-bg);
+    border: 1px solid var(--line-1);
+    border-radius: 999px;
+    cursor: pointer;
+    transition: all 0.18s var(--ease-out);
+  }
+  .tone-chip:hover:not(:disabled) { border-color: var(--c-edge); color: var(--text); }
+  .tone-chip.is-on {
+    color: var(--c-on);
+    background: var(--c);
+    border-color: transparent;
+    font-weight: 600;
+  }
+  .tone-chip:disabled { opacity: 0.45; cursor: not-allowed; }
+
   /* ---------- 时长滑块 ---------- */
   .duration-field { margin-top: 24px; }
   .duration-head {
@@ -1876,7 +1900,7 @@
           osc.frequency.value = f;
           var start = now + i * each;
           gain.gain.setValueAtTime(0, start);
-          gain.gain.linearRampToValueAtTime(0.12, start + 0.015);
+          gain.gain.linearRampToValueAtTime(0.18, start + 0.015);
           gain.gain.exponentialRampToValueAtTime(0.0001, start + each);
           osc.connect(gain);
           gain.connect(ctx.destination);
@@ -1917,6 +1941,117 @@
     if (alertTick !== null) { clearInterval(alertTick); alertTick = null; }
     try { if (navigator.vibrate) navigator.vibrate(0); } catch (e) {}
   }
+
+  /* ---------- 抽题时的「哒」声 ----------
+     走过一格 = 一声清脆的点击。
+     合成方式：三角波（比正弦多点泛音，才有木质感）+ 极短的起音噪声，
+     音高轻微下滑。不带持续噪声——带通滤波的噪声会变成"机械摩擦"声，
+     那是另一种东西。 */
+  // 两声「哒」之间的最短间隔随转盘速度变化，这是"快到停"听感的关键：
+  // 固定间隔会让声音与画面脱节——画面在减速，声音却匀速。
+  // 最快 45ms（约 22 声/秒），最慢 340ms（约 3 声/秒）。
+  // 指数 1.55 让尾部拉得更开，不是线性变慢。
+  var TICK_GAP_FAST = 45;
+  var TICK_GAP_SLOW = 340;
+  var lastTickWall = -1e9;
+  var noiseBuf = null;
+
+  function tickGapFor(rate) {
+    var k = 1 - Math.max(0, Math.min(1, rate));
+    return TICK_GAP_FAST + (TICK_GAP_SLOW - TICK_GAP_FAST) * Math.pow(k, 1.55);
+  }
+
+  // 音色档位（参数由试听页调出来后写死）
+  var TONES = {
+    crisp:  { name: "清脆", p: { freq: 2180, decay: 0.053, tone: 1, click: 0.46, noise: 0, gain: 0.9, bend: 1.06 } },
+    wood:   { name: "木质", p: { freq: 1400, decay: 0.075, tone: 1, click: 0.40, noise: 0.06, gain: 1.0, bend: 1.04 } },
+    light:  { name: "轻巧", p: { freq: 2650, decay: 0.032, tone: 0, click: 0.34, noise: 0, gain: 0.85, bend: 1.08 } },
+    muted:  { name: "低沉", p: { freq: 980, decay: 0.060, tone: 1, click: 0.32, noise: 0.04, gain: 1.0, bend: 1.03 } },
+    soft:   { name: "柔和", p: { freq: 1750, decay: 0.095, tone: 0, click: 0.26, noise: 0, gain: 1.0, bend: 1.05 } }
+  };
+  var DEFAULT_TONE = "crisp";
+
+  function toneDef(id) { return TONES[id] || TONES[DEFAULT_TONE]; }
+
+  function getNoiseBuf(ctx) {
+    if (noiseBuf && noiseBuf.sampleRate === ctx.sampleRate) return noiseBuf;
+    var len = Math.floor(ctx.sampleRate * 0.06);
+    var buf = ctx.createBuffer(1, len, ctx.sampleRate);
+    var d = buf.getChannelData(0);
+    for (var i = 0; i < len; i++) d[i] = Math.random() * 2 - 1;
+    noiseBuf = buf;
+    return buf;
+  }
+
+  // rate: 1=转得最快，0=即将停。音量与音高随之微调，听感跟着减速走
+  function playTick(rate) {
+    if (state.muted || !state.spinSound) return;
+    // 快速滚动阶段一秒走过几百格，必须节流，否则叠成噪音。
+    // 间隔随 rate 变化，音频才跟着转盘一起慢下来。
+    // 用 performance.now() 而不是 ctx.currentTime：音频时钟只用于调度，
+    // 拿它做节流会因两者速率不同而失效。
+    var wall = performance.now();
+    if (wall - lastTickWall < tickGapFor(rate)) return;
+    lastTickWall = wall;
+
+    ensureAudio(function (ctx) {
+      try {
+        var P = toneDef(state.spinTone).p;
+        var t = ctx.currentTime;
+        var amp = P.gain * (0.62 + 0.38 * rate);
+        var master = ctx.createGain();
+        master.gain.value = amp;
+        master.connect(ctx.destination);
+
+        // 起音敲击：极短噪声，给一个"硬"的起始
+        if (P.click > 0.01) {
+          var src = ctx.createBufferSource();
+          src.buffer = getNoiseBuf(ctx);
+          var bp = ctx.createBiquadFilter();
+          bp.type = "bandpass";
+          bp.frequency.value = P.freq * 2.4;
+          bp.Q.value = 0.9;
+          var cg = ctx.createGain();
+          cg.gain.setValueAtTime(P.click, t);
+          cg.gain.exponentialRampToValueAtTime(0.0001, t + Math.min(0.012, P.decay * 0.5));
+          src.connect(bp); bp.connect(cg); cg.connect(master);
+          src.start(t); src.stop(t + 0.03);
+        }
+
+        // 音调本体：音高轻微下滑
+        if (P.tone !== 2) {
+          var osc = ctx.createOscillator();
+          osc.type = P.tone === 1 ? "triangle" : "sine";
+          osc.frequency.setValueAtTime(P.freq * P.bend, t);
+          osc.frequency.exponentialRampToValueAtTime(P.freq, t + P.decay * 0.7);
+          var g = ctx.createGain();
+          g.gain.setValueAtTime(0.0001, t);
+          g.gain.exponentialRampToValueAtTime(1, t + 0.0015);
+          g.gain.exponentialRampToValueAtTime(0.0001, t + P.decay);
+          osc.connect(g); g.connect(master);
+          osc.start(t); osc.stop(t + P.decay + 0.02);
+        }
+
+        // 噪声成分（木质档用一点）
+        if (P.noise > 0.01) {
+          var s2 = ctx.createBufferSource();
+          s2.buffer = getNoiseBuf(ctx);
+          var lp = ctx.createBiquadFilter();
+          lp.type = "lowpass";
+          lp.frequency.value = P.freq * 3;
+          var ng = ctx.createGain();
+          ng.gain.setValueAtTime(P.noise, t);
+          ng.gain.exponentialRampToValueAtTime(0.0001, t + P.decay);
+          s2.connect(lp); lp.connect(ng); ng.connect(master);
+          s2.start(t); s2.stop(t + P.decay + 0.02);
+        }
+      } catch (e) {}
+    });
+  }
+
+  // 「哒」是单发音，没有持续音要停。保留这个函数是为了在
+  // 关掉开关 / 静音 / 中断抽题时统一收口，以后若加持续音也有地方停。
+  function stopSpinSound() {}
 
   function toneLand() { tone([660, 880], 0.24); buzz(35); }
   function toneStart() { tone([520, 780], 0.26); buzz(25); }
@@ -2067,6 +2202,9 @@
     speechSeconds: clamp(Number(load("speech", 60)) || 60, 30, 900),
     researchSeconds: clamp(Number(load("research", 600)) || 600, 60, 3600),
     muted: loadBool("muted", false),
+    // 抽题时的齿轮声单独可控（有人觉得吵，但想保留到点提示音）
+    spinSound: loadBool("spinSound", true),
+    spinTone: TONES[load("spinTone", DEFAULT_TONE)] ? load("spinTone", DEFAULT_TONE) : DEFAULT_TONE,
     history: loadHistory(),
     // 本次练习的起点信息，计时结束时用来落一条记录
     session: null,
@@ -2388,6 +2526,7 @@
   function clearSpin() {
     if (spinTick !== null) { clearInterval(spinTick); spinTick = null; }
     if (spinGuard !== null) { clearTimeout(spinGuard); spinGuard = null; }
+    stopSpinSound();
   }
 
   function spin() {
@@ -2396,6 +2535,7 @@
     state.spinning = true;
     state.topic = null;
     renderAll();
+    lastTickWall = -1e9;
 
     var topics = activeTopics();
     var total = topics.length;
@@ -2409,6 +2549,7 @@
       if (settled) return;
       settled = true;
       clearSpin();
+      stopSpinSound();
       lastIndex = plan.landIndex;
       state.spinning = false;
       setTopic(topics[plan.landIndex]);
@@ -2427,6 +2568,9 @@
         var idx = (from + step) % total;
         lastIndex = idx;
         el.reelPhrase.textContent = topics[idx];
+        // 每走过一格响一声。playTick 内部按 rate 决定是否真的发声，
+        // 所以转速越快越密、越慢越稀，直到"咔"地停住。
+        playTick(Math.max(0, 1 - t));
       }
       if (t >= 1) finish();
     }
@@ -3032,7 +3176,20 @@
         "</div>" +
 
         '<label class="check-row"><input type="checkbox" id="setMuted"' + (state.muted ? " checked" : "") + ">" +
-          "<span>静音提示音</span></label>" +
+          "<span>静音全部声音</span></label>" +
+
+        '<label class="check-row"><input type="checkbox" id="setSpinSound"' +
+          (state.spinSound ? " checked" : "") + (state.muted ? " disabled" : "") + ">" +
+          "<span>抽题时播放声音</span></label>" +
+
+        '<div class="field" id="toneField">' +
+          '<div class="field-head">' +
+            '<span class="field-label">抽题音色</span>' +
+            '<button type="button" class="link-btn" id="tonePreview">试听</button>' +
+          "</div>" +
+          '<div class="tones" id="toneList" role="radiogroup" aria-label="抽题音色"></div>' +
+          '<p class="field-hint">点一个就会响一声。不满意可以随时换。</p>' +
+        "</div>" +
 
         '<p class="panel-note">全部存在浏览器本地，不上传任何东西。</p>' +
         '<div class="panel-foot">' +
@@ -3136,6 +3293,7 @@
     var speechInput = wrap.querySelector("#setSpeech");
     var researchInput = wrap.querySelector("#setResearch");
     var mutedInput = wrap.querySelector("#setMuted");
+    var spinSoundInput = wrap.querySelector("#setSpinSound");
 
     function paintFill(input) {
       var min = Number(input.min) || 0;
@@ -3199,7 +3357,54 @@
     mutedInput.addEventListener("change", function () {
       state.muted = mutedInput.checked;
       save("muted", state.muted);
+      // 全部静音时，齿轮声开关跟着置灰（仍保留用户此前的选择）
+      if (spinSoundInput) {
+        spinSoundInput.disabled = state.muted;
+        if (state.muted) stopSpinSound();
+      }
+      renderTones();
     });
+
+    // 音色列表（试听时会响一声，所以必须在用户点击里调用）
+    var toneList = wrap.querySelector("#toneList");
+    var toneField = wrap.querySelector("#toneField");
+    function renderTones() {
+      toneList.innerHTML = Object.keys(TONES).map(function (id) {
+        return '<button type="button" class="tone-chip' + (state.spinTone === id ? " is-on" : "") +
+          '" data-tone="' + id + '" role="radio" aria-checked="' + (state.spinTone === id ? "true" : "false") + '">' +
+          toneDef(id).name + "</button>";
+      }).join("");
+      var off = state.muted || !state.spinSound;
+      Array.prototype.forEach.call(toneList.querySelectorAll(".tone-chip"), function (btn) {
+        btn.disabled = off;
+        btn.addEventListener("click", function () {
+          state.spinTone = btn.dataset.tone;
+          save("spinTone", state.spinTone);
+          renderTones();
+          // 立即响一声，方便判断
+          lastTickWall = -1e9;
+          playTick(1);
+        });
+      });
+      if (tonePreview) tonePreview.disabled = off;
+    }
+    var tonePreview = wrap.querySelector("#tonePreview");
+    renderTones();
+    if (tonePreview) {
+      tonePreview.addEventListener("click", function () {
+        lastTickWall = -1e9;
+        playTick(1);
+      });
+    }
+
+    if (spinSoundInput) {
+      spinSoundInput.addEventListener("change", function () {
+        state.spinSound = spinSoundInput.checked;
+        save("spinSound", state.spinSound);
+        if (!state.spinSound) stopSpinSound();
+        renderTones();
+      });
+    }
 
     function shutdown() {
       document.removeEventListener("keydown", onKey);

@@ -4,9 +4,14 @@
 
 ## 直接用（推荐手机）
 
-**https://pig-tongzhi.github.io/speak60/**
+**https://175.178.41.19/speak60/**  ← 腾讯云，国内访问快
 
-手机浏览器打开就能练，布局和触摸都已适配。想离线用就存成书签或添加到主屏幕。
+备选：
+
+- GitHub Pages：**https://pig-tongzhi.github.io/speak60/**
+- 局域网：`./serve.sh` 起服务，手机连同一 Wi-Fi（改完立刻生效）
+
+手机浏览器打开就能练，布局和触摸都已适配。想离线用就添加到主屏幕。
 
 ## 用手机连电脑（局域网）
 
@@ -218,6 +223,28 @@ iPhone SE 320×568 · iPhone 8 375×667 · iPhone 12/13 390×844 · iPhone 14 Pr
 - 界面图标与浏览器图标全部是内联 SVG，没有用 emoji（emoji 在 Windows / Android 上渲染差异很大，会破坏视觉一致性）
 - 字体只用系统字体，不加载任何 Web Font
 - 换配色时浏览器图标同步更新：每套配色在 `PALETTES` 里同时登记 `swatch`（深色版）和 `swatchLight`（浅色版），这两个值必须和 CSS 里的 `--c` 保持一致
+
+## 部署
+
+线上有两个地方：
+
+| 位置 | 地址 | 怎么更新 |
+|---|---|---|
+| 腾讯云 | `https://175.178.41.19/speak60/` | `./deploy/deploy-cloud.sh` |
+| GitHub Pages | `https://pig-tongzhi.github.io/speak60/` | `git push`，等 Pages 构建（约 1 分钟） |
+| 局域网 | `./serve.sh` 打印的地址 | 改完刷新即可 |
+
+腾讯云那份用脚本部署，**幂等且可回滚**：
+
+```bash
+./deploy/deploy-cloud.sh --dry-run   # 只上传+校验，不动 nginx
+./deploy/deploy-cloud.sh             # 正式部署
+./deploy/deploy-cloud.sh --rollback  # 还原 nginx 配置
+```
+
+脚本会备份 nginx 配置、`nginx -t` 校验（不通过自动回滚）、reload、再验证线上内容与本地逐字节一致，并确认同机器上另外三个服务没受影响。
+
+> 注意：**不能占用根路径 `/`**——那是同机器上船舶备件的 SPA。speak60 走 `/speak60/` 子路径，nginx 里是 `location ^~ /speak60/`。
 
 ## 文件
 
